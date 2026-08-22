@@ -79,7 +79,16 @@ bound.
 - balanced-decomposition tests: 11 passed;
 - fixed-weight capacity audits: passed for `tau=32` and `tau=34`.
 
-## Corrected hardness audit: blocking result
+## Corrected hardness audit: blocking result for the performance code line
+
+This result concerns the repository's quadratic-splitting performance line
+`q_perf = 2^50 - 2687` and its internal RoKoko p28 commitment chain.  It does
+not invalidate the separate formula-derived Cyclo theorem table on
+`q_exact = 2^50 - 351`.  The supplied one-star/fixed-weight resolution note
+explicitly separates those two modulus and norm interfaces.  The finding
+blocks any statement that the current Rust p28 chain is already certified at
+128 classical bits; it is not a counterexample to the exact-strong
+coefficient-infinity theorem.
 
 The legacy `debug-hardness` path treated `decomposition_base_log` as if it
 were the radix.  It multiplied a decomposed Euclidean norm by
@@ -140,7 +149,7 @@ Reproduction artifacts:
 - the ignored Rust test `audit_medium_observed_minimum_ranks` reruns the pinned
   estimator rank scan.
 
-## Outstanding before manuscript integration
+## Outstanding before implementation claims are integrated into the manuscript
 
 1. Recalibrate the historical p-26, p-30, and exact-norm `NB_P_*` tables for
    the fixed-weight sampler.  Only their deterministic decomposition capacity
