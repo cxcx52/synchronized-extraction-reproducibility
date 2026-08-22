@@ -1,0 +1,32 @@
+{
+  "sympy_version": "1.13.1",
+  "q_exact": 1125899906842273,
+  "q_bits": 50,
+  "is_prime": true,
+  "q_mod_256": 161,
+  "q_mod_64": 33,
+  "order_mod_256": 8,
+  "factor_count": 16,
+  "factor_degrees": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8
+  ],
+  "all_factors_irreducible": true,
+  "strong_margin": 1.0905077326652364,
+  "log2_ternary_support_size": 202.87520009230798,
+  "coefficient_dimension": 1476395008
+}
