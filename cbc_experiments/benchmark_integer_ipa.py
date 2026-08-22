@@ -25,15 +25,20 @@ def fu_new_logq(r, lam=128, logB=64):
         + 32*r*r - 16*r + 11 + logB
     )
 
-def median_pow_time(exp_bits, mod_bits, reps=5, seed=1):
-    rnd = random.Random(
-        seed + exp_bits*131 + mod_bits
-    )
-    mod = (
+def deterministic_odd_modulus(mod_bits, seed=1):
+    rnd = random.Random(seed + mod_bits * 1009)
+    return (
         (1 << (mod_bits-1))
         | rnd.getrandbits(mod_bits-1)
         | 1
     )
+
+
+def median_pow_time(exp_bits, mod, reps=7, seed=1):
+    # Use the same modulus and RNG seed for the old/new comparison.  The
+    # exponent bit lengths necessarily differ, but their sampled bit patterns
+    # come from the same deterministic stream.
+    rnd = random.Random(seed)
     base = 5
     exps = [
         (1 << (exp_bits-1))
@@ -48,17 +53,18 @@ def median_pow_time(exp_bits, mod_bits, reps=5, seed=1):
         ts.append(time.perf_counter()-t0)
     return statistics.median(ts)
 
-def horner_encoding_time(n, q_bits, reps=3, seed=7):
+def horner_encoding_time(digits, q_bits, reps=7, seed=7):
+    n = len(digits)
     rnd = random.Random(seed+n*17+q_bits)
     q = (
         (1 << (q_bits-1))
         | rnd.getrandbits(q_bits-1)
         | 1
     )
-    digits = [
-        rnd.randrange(-(1<<15), (1<<15))
-        for _ in range(n)
-    ]
+    # Warm up using the exact same coefficient vector measured below.
+    acc = 0
+    for x in reversed(digits):
+        acc = acc*q + x
     ts = []
     outbits = 0
     for _ in range(reps):
@@ -77,11 +83,17 @@ def main():
         old_bits = math.ceil(fu_old_logq(r))
         new_bits = math.ceil(fu_new_logq(r))
 
+        digit_rng = random.Random(7 + n*17)
+        digits = [
+            digit_rng.randrange(-(1 << 15), (1 << 15))
+            for _ in range(n)
+        ]
+
         h_old, out_old = horner_encoding_time(
-            n, old_bits
+            digits, old_bits
         )
         h_new, out_new = horner_encoding_time(
-            n, new_bits
+            digits, new_bits
         )
 
         row = {
@@ -99,11 +111,14 @@ def main():
         }
 
         for mod_bits in (2048, 3072):
+            modulus = deterministic_odd_modulus(
+                mod_bits, seed=101
+            )
             p_old = median_pow_time(
-                old_bits, mod_bits, reps=5, seed=11
+                old_bits, modulus, reps=7, seed=11+r
             )
             p_new = median_pow_time(
-                new_bits, mod_bits, reps=5, seed=11
+                new_bits, modulus, reps=7, seed=11+r
             )
             row[f"powmod_{mod_bits}_old_seconds"] = p_old
             row[f"powmod_{mod_bits}_new_seconds"] = p_new
@@ -136,11 +151,14 @@ def main():
         old_q = math.ceil(fu_old_logq(r))
         new_q = math.ceil(fu_new_logq(r))
         for mod_bits in (2048, 3072):
+            modulus = deterministic_odd_modulus(
+                mod_bits, seed=211
+            )
             old_t = median_pow_time(
-                n*old_q, mod_bits, reps=3, seed=23
+                n*old_q, modulus, reps=5, seed=23+r
             )
             new_t = median_pow_time(
-                n*new_q, mod_bits, reps=3, seed=23
+                n*new_q, modulus, reps=5, seed=23+r
             )
             direct_rows.append({
                 "r": r,
