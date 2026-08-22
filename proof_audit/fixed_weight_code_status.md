@@ -6,7 +6,8 @@ Date: 2026-08-23
 
 The deterministic two-run boundary regression now passes under the exact
 fixed-Hamming-weight sampler.  No manuscript LaTeX was edited during this
-audit.
+audit.  The protocol implementation is algebraically consistent, but the
+current p28 parameter line fails the corrected extraction-hardness audit below.
 
 ## Root cause
 
@@ -78,16 +79,78 @@ bound.
 - balanced-decomposition tests: 11 passed;
 - fixed-weight capacity audits: passed for `tau=32` and `tau=34`.
 
+## Corrected hardness audit: blocking result
+
+The legacy `debug-hardness` path treated `decomposition_base_log` as if it
+were the radix.  It multiplied a decomposed Euclidean norm by
+`base_log^(chunks-1)`.  Balanced recomposition actually has weights
+
+    1, 2^base_log, ..., 2^(base_log * (chunks-1)),
+
+so its exact Euclidean operator norm is the square root of the sum of the
+squared weights.  The old expression underestimated the recomposition factor
+by orders of magnitude.  The same bug appeared in the folded-witness and
+projection paths.
+
+The corrected audit also isolates the folded-witness and projection regions by
+their generated layout prefixes.  It no longer charges unrelated packed
+opening/commitment data to those two bounds.  An explicit test-only exhaustive
+mode (`ROKOKO_AUDIT_HARDNESS=1`) reports every layer while leaving production
+checks unchanged.
+
+For the deterministic medium, `tau=32` execution, the pinned classical
+Euclidean-SIS MATZOV/GSA port now reports:
+
+| Layer | Current rank | Corrected observed extraction bound | Current bits | Observed min. rank for >=128 bits |
+|---|---:|---:|---:|---:|
+| root | 6 | 662371544518619.5 | trivial (`B >= (q-1)/2`) | none |
+| p1 | 5 | 78126653221.73138 | 79 | 8 (128 bits) |
+| p2 | 5 | 88595099476.23438 | 78 | 9 (145 bits) |
+| p3 | 4 | 53980621254.51988 | 65 | 8 (133 bits) |
+| p4 | 4 | 18946047940.875683 | 71 | 8 (146 bits) |
+| p5 | 3 | 13454245035.26238 | 55 | 7 (130 bits) |
+| simple | 4 | 310021936.4924724 | 104 | 5 (132 bits) |
+
+The root bound exceeds `(q-1)/2 = 562949953419968`, so increasing its rank
+cannot repair the current line.  The p1, p2, and p3 certified projection
+recomposition bounds also fail the centered uniqueness gate; p4 and p5 pass.
+All five *observed honest* recomposed projection norms pass, which shows that
+the benchmark execution is much shorter than the worst direction permitted by
+the current digit interface.  Honest observations cannot replace a malicious-
+prover bound.
+
+The recursive-commitment scan finds one additional sub-target path: the p1
+depth-0 commitment, opening, and projection-image commitments each estimate to
+122 bits at rank 2 under the audit's shared observed length bound.  The other
+reported recursive paths range from 131 to 165 bits.  The strict
+`debug-hardness` mode now treats an estimator error or any estimate below 128
+bits as a failure; it no longer merely prints those results.
+
+The rank column above is deliberately labelled observed: it scans the exact
+MATZOV/GSA port at the deterministic run's measured norm.  It is not a final
+parameter recommendation.  A theorem-level rank table must instead use proved
+norm budgets, and the root plus projection-gate failures require a coordinated
+parameter/proof redesign before ranks are changed.
+
+Reproduction artifacts:
+
+- `proof_audit/fixed_weight_hardness_audit.py` recomputes every algebraic bound;
+- `proof_audit/generated/fixed_weight_hardness_audit.json` records the full
+  ledger and provenance;
+- the ignored Rust test `audit_medium_observed_minimum_ranks` reruns the pinned
+  estimator rank scan.
+
 ## Outstanding before manuscript integration
 
 1. Recalibrate the historical p-26, p-30, and exact-norm `NB_P_*` tables for
    the fixed-weight sampler.  Only their deterministic decomposition capacity
    has been audited here.
-2. Rerun every SIS/lattice-estimator output that depends on the revised radix
-   or norm ledger.  Old estimator numbers must not be carried forward.
+2. Redesign the p28 extraction parameter line so the root bound is below
+   `(q-1)/2`, every projection uniqueness gate is certified, and every basic
+   plus recursive commitment meets the target under proved norm budgets.  Old
+   rank/security numbers must not be carried forward.
 3. Supply a fixed-weight CRT anti-concentration/nonunit argument before treating
    the repository's quadratic-splitting modulus as the exact-strong theorem
    line.  The repository remains a performance implementation on that modulus.
 4. Convert the empirical medium norm ledger into the intended theorem-level
    completeness/tail statement, or label it strictly as benchmark data.
-
