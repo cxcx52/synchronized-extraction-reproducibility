@@ -81,7 +81,22 @@ proof of a tail probability.  Run the ignored
 seven entries after any sampler or radix change.
 
 The p-26, p-30, and exact-norm chains have passed the deterministic
-decomposition-capacity audit, but their historical `NB_P_*` tables and any SIS
+decomposition-capacity audit, but their historical `NB_P_*` tables and SIS
 estimator outputs have not yet been recalibrated for the fixed-weight sampler.
-They must not be cited as refreshed fixed-weight security estimates until that
-calibration and estimator rerun are complete.
+
+The medium p28 chain has now been rerun through the corrected hardness path.
+The old path incorrectly used `base_log^(chunks-1)` as a recomposition factor;
+the radix is `2^base_log`, and the exact Euclidean operator norm is the norm of
+the weight vector `(1, 2^base_log, ...)`.  After correcting that formula and
+isolating the actual folded-witness/projection regions, the current performance
+line does **not** meet its internal 128-bit target: the root extracted bound is
+at least `(q-1)/2`, the remaining basic commitments estimate to 55--104 bits,
+the p1 depth-0 recursive commitments estimate to 122 bits, and the p1--p3
+projection uniqueness gates fail under the observed digit-norm bounds.  See
+`../proof_audit/fixed_weight_code_status.md` and the generated JSON ledger.
+
+This p28 finding is confined to the repository's quadratic-splitting
+performance line and its internal RoKoko commitment chain.  It does not alter
+the separate formula-derived fixed-weight Cyclo theorem on
+`q_exact = 2^50 - 351`.  Conversely, the theorem-line table must not be cited
+as certification of the current Rust p28 parameters.

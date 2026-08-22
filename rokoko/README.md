@@ -264,7 +264,11 @@ Due to memory requirements for polynomial degree 2^30 exceeding 64 GB, the respe
 * `events`: prints a per-phase timing summary to the console at the end of the run (see [Tracing and Profiling](#tracing-and-profiling))
 * `profile`: writes a Chrome trace and a per-span snapshot to `profiles/` for offline analysis (see [Tracing and Profiling](#tracing-and-profiling))
 * `unsafe-sumcheck`: enables zero-cost borrow checking by using `UnsafeCell` instead of `RefCell` in sumcheck subprotocols
-* `debug-hardness`: verifies the hardness of underlying SIS instances (requires [Lattice Estimator](https://github.com/malb/lattice-estimator) cloned as a submodule and [SageMath](https://www.sagemath.org/) installed)
+* `debug-hardness`: checks the underlying Euclidean-SIS instances against a
+  128-bit target using the pinned classical MATZOV/GSA estimator port in
+  `src/common/estimator.rs`.  Strict runs fail on an invalid or sub-target
+  estimate.  The legacy Sage/lattice-estimator shell path remains available
+  only for cross-checking the port.
 * `debug-decomp`: additional checks for decomposition and overflows in type 0 projections
 
 ## License
