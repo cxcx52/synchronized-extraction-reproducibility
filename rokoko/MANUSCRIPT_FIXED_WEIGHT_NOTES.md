@@ -53,3 +53,35 @@ because its incomplete-NTT implementation is built around the quadratic-splittin
 ## Exact field challenges
 
 `HashWrapper::sample_u64_mod_q` now uses rejection sampling rather than direct `u64 % MOD_Q`.  This makes the transcript-derived F_q challenge exactly uniform under the XOF model and aligns the implementation with exact-uniform sum-check/ROM statements.  The old direct reduction had total-variation distance about 2^-38.6082 per draw for the current modulus.
+
+## Decomposition capacity and norm calibration
+
+Changing the challenge sampler changes honest-prover coefficient growth.  The
+old decomposition bases were sized for the rejected spectral-norm sampler and
+can silently truncate a fixed-weight fold.  Balanced decomposition now checks
+its exact encoding window before extracting digits, and the fixed-weight
+parameter chains use the following witness-decomposition base logs (chunk
+counts are unchanged):
+
+    exact-norm root: 6
+    integer bridge: 10
+    plain root:      8
+    p1..p5:          10, 11, 11, 10, 10
+
+The unit tests audit the deterministic coefficient-infinity envelope
+`width * tau * input_bound` for every plain and exact-norm chain, under both
+`tau=32` and `tau=34` builds.
+
+The `NB_P_28` table was remeasured after this change.  Each entry is the
+coordinatewise maximum observed across the deterministic default-weight and
+weight-34 full-chain runs, plus the existing 2% runtime margin when installed
+in the config.  These remain empirical benchmark acceptance bounds, not a
+proof of a tail probability.  Run the ignored
+`calibrate_full_chain_norms` test with `ROKOKO_CALIBRATE_NORMS=1` to refresh all
+seven entries after any sampler or radix change.
+
+The p-26, p-30, and exact-norm chains have passed the deterministic
+decomposition-capacity audit, but their historical `NB_P_*` tables and any SIS
+estimator outputs have not yet been recalibrated for the fixed-weight sampler.
+They must not be cited as refreshed fixed-weight security estimates until that
+calibration and estimator rerun are complete.

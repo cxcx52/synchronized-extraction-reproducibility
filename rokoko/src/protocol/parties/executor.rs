@@ -98,10 +98,17 @@ fn run(
     }
 
     let prover_duration = start.elapsed().as_nanos();
-    println!("TOTAL Prover time{}: {:?} ns", boundary_note, prover_duration);
+    println!(
+        "TOTAL Prover time{}: {:?} ns",
+        boundary_note, prover_duration
+    );
 
     let proof_size_bits = proof.size_in_bits();
-    tracing::debug!("Total proof size{}: {} KB", boundary_note, to_kb(proof_size_bits));
+    tracing::debug!(
+        "Total proof size{}: {} KB",
+        boundary_note,
+        to_kb(proof_size_bits)
+    );
     let start = std::time::Instant::now();
     let mut verifier_boundary = None;
     let verifier_span = tracing::info_span!("verifier").entered();
@@ -340,12 +347,12 @@ pub fn execute_snark() {
 
 #[cfg(test)]
 mod tests {
-    use super::execute_to_boundary;
+    use super::{execute, execute_to_boundary};
     use crate::common::init_common;
     use std::num::NonZeroUsize;
 
     #[test]
-    fn round_boundary_extraction_cut_3() {
+    fn round_boundary_extraction() {
         init_common();
         let mut run = execute_to_boundary(NonZeroUsize::new(3).unwrap());
 
@@ -369,11 +376,7 @@ mod tests {
         assert_eq!(run.crs.cks.len(), run.verifier_crs.structured_cks.len());
         let first_row = &run.verifier_crs.structured_cks[0][0];
         assert_eq!(first_row.tensor_layers.len(), 1);
-    }
 
-    #[test]
-    fn round_boundary_extraction_cut_4() {
-        init_common();
         let run4 = execute_to_boundary(NonZeroUsize::new(4).unwrap());
         assert_eq!(run4.prover.witness.height, 512);
         assert_eq!(run4.prover.witness.width, 8);
@@ -381,5 +384,15 @@ mod tests {
             run4.prover.evaluation_points,
             run4.verifier.evaluation_points
         );
+    }
+
+    /// Long-running utility for refreshing every `NB_P_*` entry after a
+    /// sampler or decomposition-parameter change. Run with
+    /// `ROKOKO_CALIBRATE_NORMS=1` and `--ignored --nocapture`.
+    #[test]
+    #[ignore = "full-chain norm calibration is intentionally long-running"]
+    fn calibrate_full_chain_norms() {
+        init_common();
+        execute();
     }
 }

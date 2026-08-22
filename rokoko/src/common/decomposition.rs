@@ -33,12 +33,24 @@ pub fn decompose(input: &[RingElement], base_log: u64, radix: usize) -> Vec<Ring
         return decomposed;
     }
 
+    let total_bits = base_log
+        .checked_mul(radix as u64)
+        .expect("decomposition bit length overflow");
+    assert!(
+        total_bits <= 64,
+        "balanced decomposition currently requires base_log * radix <= 64"
+    );
+
     let small_shift_val = 1u64 << (base_log - 1);
     let mut big_shift_val: u64 = 0;
     for i in 0..radix {
-        big_shift_val += small_shift_val << (i as u64 * base_log);
+        big_shift_val = big_shift_val
+            .checked_add(small_shift_val << (i as u64 * base_log))
+            .expect("balanced decomposition shift overflow");
     }
-    let big_shift = RingElement::all(big_shift_val, Representation::EvenOddCoefficients);
+    let big_shift_mod_q = big_shift_val % MOD_Q;
+    let big_shift = RingElement::all(big_shift_mod_q, Representation::EvenOddCoefficients);
+    let encoding_limit = (total_bits < 64).then(|| 1u64 << total_bits);
 
     let small_shift = RingElement::all(1u64 << (base_log - 1), Representation::EvenOddCoefficients);
 
@@ -50,6 +62,15 @@ pub fn decompose(input: &[RingElement], base_log: u64, radix: usize) -> Vec<Ring
     for (index, el) in input.iter().enumerate() {
         temp.set_from(el);
         temp.to_representation(Representation::EvenOddCoefficients);
+        if let Some(encoding_limit) = encoding_limit {
+            for (coefficient, &value) in temp.v.iter().enumerate() {
+                let shifted = ((value as u128 + big_shift_mod_q as u128) % MOD_Q as u128) as u64;
+                assert!(
+                    shifted < encoding_limit,
+                    "balanced decomposition capacity exceeded: input index {index}, coefficient {coefficient}, base_log {base_log}, radix {radix}, shifted representative {shifted} >= 2^{total_bits}"
+                );
+            }
+        }
         #[cfg(feature = "debug-decomp")]
         {
             let q = crate::common::config::MOD_Q;
@@ -328,6 +349,25 @@ fn test_compose_from_decomposed() {
     let decomposed = decompose(&mut input, base_log, radix);
     let recomposed = compose_from_decomposed(&decomposed, base_log, radix);
     debug_assert_eq!(recomposed[0], input[0]);
+}
+
+#[test]
+fn test_decompose_large_shift_roundtrip() {
+    let input: Vec<RingElement> = (0..4)
+        .map(|_| RingElement::random(Representation::IncompleteNTT))
+        .collect();
+    let base_log = 7;
+    let radix = 8;
+    let decomposed = decompose(&input, base_log, radix);
+    let recomposed = compose_from_decomposed(&decomposed, base_log, radix);
+    assert_eq!(recomposed, input);
+}
+
+#[test]
+#[should_panic(expected = "balanced decomposition capacity exceeded")]
+fn test_decompose_rejects_out_of_window_input() {
+    let input = vec![RingElement::constant(28, Representation::IncompleteNTT)];
+    let _ = decompose(&input, 3, 2);
 }
 
 #[test]
