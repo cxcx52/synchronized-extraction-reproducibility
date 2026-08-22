@@ -84,10 +84,10 @@ fn main() {
     {
         println!("✗ AVX-512 is only available on x86_64 architecture");
     }
-    let challenge_set_repetition_rate = repetition_rate();
+    let challenge_sampler_attempt_rate = repetition_rate();
     println!(
-        "Expected repetition rate for challenge set: {:.2}",
-        challenge_set_repetition_rate
+        "Average fixed-weight sampler attempts per challenge: {:.2}",
+        challenge_sampler_attempt_rate
     );
 
     let tracing_guards = rokoko::tracing::setup();

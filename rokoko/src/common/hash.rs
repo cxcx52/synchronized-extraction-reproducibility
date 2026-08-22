@@ -101,9 +101,21 @@ impl HashWrapper {
         u64::from_le_bytes(buf)
     }
 
+    /// Sample an exactly uniform element of F_q from the transcript XOF.
+    ///
+    /// A direct `u64 % MOD_Q` reduction is slightly biased whenever MOD_Q does
+    /// not divide 2^64.  We therefore reject the top incomplete residue block.
+    /// `threshold` is a multiple of MOD_Q, so conditioning on `x < threshold`
+    /// makes every residue class occur the same number of times.
     pub fn sample_u64_mod_q(&mut self) -> u64 {
         self.dbg_fs("sample_u64_mod_q", 1);
-        self.sample_u64() % MOD_Q
+        let threshold = u64::MAX - (u64::MAX % MOD_Q);
+        loop {
+            let x = self.sample_u64();
+            if x < threshold {
+                return x % MOD_Q;
+            }
+        }
     }
 
     pub fn fill_from_xof(&mut self, label: &[u8], out: &mut [u8]) {
@@ -221,6 +233,9 @@ impl HashWrapper {
             self.sample_biased_ternary_ring_element_into(element);
         }
     }
+    /// Historical API name.  The manuscript-adapted implementation samples
+    /// uniformly from the exact fixed-Hamming-weight signed ternary family; it
+    /// no longer performs spectral-norm rejection.
     pub fn sample_low_op_norm_ring_into(&mut self, output: &mut RingElement) {
         self.dbg_fs("sample_low_op_norm_ring_into", 1);
         sample_short_challenge_into(self, output);
@@ -370,6 +385,18 @@ mod tests {
         let element = transcript.sample_ternary_ring_element();
         for &coeff in element.v.iter() {
             debug_assert!(coeff == MOD_Q - 1 || coeff == 0 || coeff == 1);
+        }
+    }
+
+    #[test]
+    fn sample_u64_mod_q_is_deterministic_and_in_range() {
+        let mut t1 = HashWrapper::new();
+        let mut t2 = HashWrapper::new();
+        for _ in 0..10_000 {
+            let x1 = t1.sample_u64_mod_q();
+            let x2 = t2.sample_u64_mod_q();
+            assert_eq!(x1, x2);
+            assert!(x1 < MOD_Q);
         }
     }
 

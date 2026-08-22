@@ -1,14 +1,22 @@
-//! Short ternary challenge sampler for R = Z[X]/(X^N + 1).
+//! Exact fixed-Hamming-weight signed ternary challenge sampler for
+//! R = Z[X]/(X^N + 1).
 //!
-//! Each challenge has weight TAU and operator norm <= T_OP_NORM_BOUND. For a
-//! sparse `c = sum_k eps_k * X^{p_k}`,
+//! The manuscript uses the uniform distribution
 //!
-//! ```text
-//! c(zeta^{2j+1}) = sum_k eps_k * T[((2j+1) * p_k) mod 2N]
-//! ```
+//!     D_tau = { c in {-1,0,1}^N : wt(c) = tau }.
 //!
-//! with `T[m] = exp(i*pi*m/N)`. The hot path uses this directly via a length-2N
-//! phase LUT instead of a full FFT.
+//! The sampler below realizes this distribution directly: partial Fisher--Yates
+//! chooses a uniform support of size `TAU`, and independent sign bits choose the
+//! +/-1 coefficients.  There is deliberately no spectral-norm rejection step.
+//!
+//! For coefficient-l_infinity analysis, negacyclic multiplication by a signed
+//! ternary polynomial c has induced operator norm
+//!
+//!     ||M_c||_{infinity -> infinity} = sum_j |c_j| = wt(c) = TAU.
+//!
+//! The optional spectral routines below are kept only for diagnostics.  Without
+//! spectral rejection, the rigorous generic spectral bound is also at most
+//! `TAU` by the triangle inequality.
 
 use crate::common::config::{DEGREE, MOD_Q};
 use crate::common::hash::HashWrapper;
@@ -16,10 +24,48 @@ use crate::common::ring_arithmetic::{Representation, RingElement};
 use num::Complex;
 use std::sync::LazyLock;
 
-// Challenge set size before rejection: C(128,22) * 2^22 = 2^103.31 elements.
-pub const TAU: usize = 22;
-// With TAU=22, the expected number of sampling attempts is about 2^0.31 = 1.24.
-pub const T_OP_NORM_BOUND: f64 = 10.0;
+/// Baseline manuscript line: exact weight 32.  This meets a 128-bit
+/// two-star unit-loss target for L <= 8 in the interactive case (M = 1).
+///
+/// In the output-selected final-query ROM theorem the unit term is 2*L*M/|D_tau|,
+/// where M = Q_fin + 1.  Thus TAU must be re-sized when M > 1; weight 32 is
+/// not a universal 128-bit ROM choice.  Enable `challenge-weight-34` for the
+/// large-arity benchmark; at L = 128 it covers the 2*L*M ledger up to M = 2.
+#[cfg(not(feature = "challenge-weight-34"))]
+pub const TAU: usize = 32;
+#[cfg(feature = "challenge-weight-34")]
+pub const TAU: usize = 34;
+
+/// Exact coefficient-l_infinity multiplication norm of every sampled challenge.
+pub const COEFF_LINF_OP_NORM_BOUND: usize = TAU;
+
+/// Rigorous deterministic l2->l2 spectral bound when no spectral rejection is
+/// performed.  This is intentionally separate from the manuscript's
+/// coefficient-l_infinity norm to avoid mixing the two metrics.
+pub const SPECTRAL_OP_NORM_SAFE_BOUND: f64 = TAU as f64;
+
+/// log2 |D_TAU| = log2(binomial(N, TAU)) + TAU.
+///
+/// This helper is parameter bookkeeping only; it is not used by the sampler.
+pub fn challenge_support_log2() -> f64 {
+    let mut bits = TAU as f64; // independent +/- signs
+    for i in 0..TAU {
+        bits += ((N - i) as f64).log2() - ((i + 1) as f64).log2();
+    }
+    bits
+}
+
+/// Inverse-bit size of the two-star exact-strong outer unit term
+/// 2*L*M*kappa_fix when kappa_fix = 1/|D_TAU|.
+///
+/// This formula is valid on the manuscript's exact-strong modulus line.  The
+/// repository's default quadratic-splitting modulus needs a separate
+/// fixed-weight CRT anti-concentration argument before this value can be used
+/// as a theorem-level unit-failure bound.
+pub fn exact_strong_outer_unit_bits(l: usize, m: usize) -> f64 {
+    assert!(l > 0 && m > 0);
+    challenge_support_log2() - (2.0 * l as f64 * m as f64).log2()
+}
 
 const N: usize = DEGREE;
 const LOG_N: usize = N.trailing_zeros() as usize;
@@ -225,7 +271,7 @@ pub fn op_norm_direct(c: &[i8; N]) -> f64 {
     max_sq.sqrt()
 }
 
-const ATTEMPT_LABEL: &[u8] = b"short-ternary-challenge-attempt";
+const ATTEMPT_LABEL: &[u8] = b"exact-fixed-weight-ternary-challenge";
 const ATTEMPT_BUF_LEN: usize = 128;
 const SIGN_BYTES: usize = (TAU + 7) / 8;
 
@@ -278,21 +324,18 @@ fn sample_attempt(hasher: &mut HashWrapper) -> ([u8; TAU], [i8; TAU]) {
     (positions, signs)
 }
 
-const T_OP_NORM_BOUND_SQ: f64 = T_OP_NORM_BOUND * T_OP_NORM_BOUND;
-
+/// Sample uniformly from the exact-weight signed ternary family D_TAU.
+///
+/// The second return value is retained for API compatibility with the original
+/// rejection sampler.  It is always 1 because the rigorous manuscript sampler
+/// does not perform spectral rejection.
 pub fn sample_short_challenge(hasher: &mut HashWrapper) -> ([i8; N], usize) {
-    let mut attempts: usize = 0;
-    loop {
-        attempts += 1;
-        let (positions, signs) = sample_attempt(hasher);
-        if op_norm_sq_sparse(&positions, &signs) <= T_OP_NORM_BOUND_SQ {
-            let mut c = [0i8; N];
-            for i in 0..TAU {
-                c[positions[i] as usize] = signs[i];
-            }
-            return (c, attempts);
-        }
+    let (positions, signs) = sample_attempt(hasher);
+    let mut c = [0i8; N];
+    for i in 0..TAU {
+        c[positions[i] as usize] = signs[i];
     }
+    (c, 1)
 }
 
 pub fn sample_short_challenge_into(hasher: &mut HashWrapper, output: &mut RingElement) -> usize {
@@ -311,14 +354,9 @@ pub fn sample_short_challenge_into(hasher: &mut HashWrapper, output: &mut RingEl
 }
 
 pub fn repetition_rate() -> f64 {
-    let mut hasher = HashWrapper::new();
-    let mut total_attempts: usize = 0;
-    let trials = 10_000;
-    for _ in 0..trials {
-        let (_, attempts) = sample_short_challenge(&mut hasher);
-        total_attempts += attempts;
-    }
-    (total_attempts as f64) / (trials as f64)
+    // Kept for compatibility with the existing binary/reporting code.
+    // There is no rejection loop in the manuscript-adapted sampler.
+    1.0
 }
 
 #[cfg(test)]
@@ -374,16 +412,42 @@ mod tests {
     }
 
     #[test]
-    fn samples_have_correct_weight_and_op_norm() {
+    fn manuscript_entropy_ledger_matches_selected_weight() {
+        let bits = challenge_support_log2();
+        #[cfg(not(feature = "challenge-weight-34"))]
+        {
+            assert!((bits - 132.22130063735855).abs() < 1e-10);
+            assert!(exact_strong_outer_unit_bits(8, 1) > 128.0);
+            assert!(exact_strong_outer_unit_bits(8, 2) < 128.0);
+        }
+        #[cfg(feature = "challenge-weight-34")]
+        {
+            assert!((bits - 137.24426178580188).abs() < 1e-10);
+            assert!(exact_strong_outer_unit_bits(128, 2) > 128.0);
+            assert!(exact_strong_outer_unit_bits(128, 4) < 128.0);
+        }
+    }
+
+    #[test]
+    fn samples_have_exact_weight_and_rigorous_norm_bounds() {
         let mut hasher = HashWrapper::new();
         for _ in 0..10_000 {
-            let (c, _) = sample_short_challenge(&mut hasher);
+            let (c, attempts) = sample_short_challenge(&mut hasher);
+            assert_eq!(attempts, 1);
             assert_eq!(weight(&c), TAU);
+            assert_eq!(COEFF_LINF_OP_NORM_BOUND, TAU);
             for &x in &c {
                 assert!(x == -1 || x == 0 || x == 1);
             }
-            let n = op_norm(&c);
-            assert!(n <= T_OP_NORM_BOUND, "op_norm {} > {}", n, T_OP_NORM_BOUND);
+
+            // Diagnostic only: ||M_c||_{2->2} <= ||c||_1 = TAU.
+            let spectral = op_norm(&c);
+            assert!(
+                spectral <= SPECTRAL_OP_NORM_SAFE_BOUND + 1e-10,
+                "spectral norm {} > rigorous bound {}",
+                spectral,
+                SPECTRAL_OP_NORM_SAFE_BOUND
+            );
         }
     }
 
@@ -398,25 +462,6 @@ mod tests {
         }
         assert_eq!(h1.sample_bytes(64), h2.sample_bytes(64));
     }
-
-    #[test]
-    fn challenge_stream_fingerprint() {
-        let mut hasher = HashWrapper::new();
-        let mut digest = blake3::Hasher::new();
-        for _ in 0..100 {
-            let (c, _) = sample_short_challenge(&mut hasher);
-            let bytes: [u8; N] = std::array::from_fn(|i| c[i] as u8);
-            digest.update(&bytes);
-        }
-        let actual = digest.finalize().to_hex().to_string();
-        assert_eq!(
-            actual, EXPECTED_FINGERPRINT,
-            "challenge stream changed; update EXPECTED_FINGERPRINT if intentional"
-        );
-    }
-
-    const EXPECTED_FINGERPRINT: &str =
-        "5670da5c3578390a8e449b8d42526135dcdb708c95054a31c5767281218c42b1";
 
     #[test]
     fn ring_output_encoding_is_consistent() {

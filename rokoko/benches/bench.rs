@@ -3,7 +3,7 @@ use rokoko::common::hash::HashWrapper;
 use rokoko::common::matrix::VerticallyAlignedMatrix;
 use rokoko::common::projection_matrix::ProjectionMatrix;
 use rokoko::common::ring_arithmetic::{Representation, RingElement};
-use rokoko::common::short_challenge::sample_short_challenge;
+use rokoko::common::short_challenge::{sample_short_challenge, TAU};
 use rokoko::protocol::project_coarse::{prepare_i16_witness, project};
 use std::hint::black_box;
 
@@ -76,7 +76,7 @@ fn bench_ring_multiplication(c: &mut Criterion) {
 
 fn bench_short_challenge(c: &mut Criterion) {
     let mut group = c.benchmark_group("short_challenge");
-    group.bench_function("sample_accepted", |bencher| {
+    group.bench_function("sample_exact_fixed_weight", |bencher| {
         let mut hasher = HashWrapper::new();
         bencher.iter(|| {
             let (challenge, _attempts) = sample_short_challenge(black_box(&mut hasher));
@@ -84,12 +84,10 @@ fn bench_short_challenge(c: &mut Criterion) {
         });
     });
     group.bench_function("op_norm_sq_sparse", |bencher| {
-        let positions: [u8; 22] = [
-            0, 3, 7, 11, 17, 23, 29, 31, 37, 41, 47, 53, 59, 61, 67, 73, 79, 83, 97, 103, 109, 127,
-        ];
-        let signs: [i8; 22] = [
-            1, -1, 1, 1, -1, -1, 1, -1, 1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, 1, 1, -1,
-        ];
+        let positions: [u8; TAU] =
+            std::array::from_fn(|i| ((i * 13 + 1) % rokoko::common::config::DEGREE) as u8);
+        let signs: [i8; TAU] =
+            std::array::from_fn(|i| if i % 3 == 0 { -1 } else { 1 });
         bencher.iter(|| {
             let v = rokoko::common::short_challenge::op_norm_sq_sparse(
                 black_box(&positions),

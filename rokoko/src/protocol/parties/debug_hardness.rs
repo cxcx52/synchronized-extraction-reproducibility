@@ -10,7 +10,7 @@ use crate::{
         estimator::{estimate_rsis_security, RSISParameters},
         norms,
         ring_arithmetic::RingElement,
-        short_challenge::T_OP_NORM_BOUND,
+        short_challenge::SPECTRAL_OP_NORM_SAFE_BOUND,
     },
     protocol::{
         commitment::{RecursionConfig, RecursiveCommitmentWithAux},
@@ -191,7 +191,8 @@ pub fn check_sumcheck_round(
             .witness_decomposition_base_log
             .pow((config.witness_decomposition_chunks - 1) as u32)) as f64;
 
-    let extracted_witness_bound = recomposed_witness_bound * T_OP_NORM_BOUND * EXTRACTION_SLACK;
+    let extracted_witness_bound =
+        recomposed_witness_bound * SPECTRAL_OP_NORM_SAFE_BOUND * EXTRACTION_SLACK;
 
     let recomposed_projection_bound = match &config.projection_recursion {
         Projection::Coarse(proj_config) => {
@@ -289,7 +290,8 @@ pub fn check_intermediate_round(
 
     let projection_l2_norm = norms::l2_norm_coeffs(projection_image_ct_data);
 
-    let extracted_witness_bound = recomposed_witness_bound * T_OP_NORM_BOUND * EXTRACTION_SLACK;
+    let extracted_witness_bound =
+        recomposed_witness_bound * SPECTRAL_OP_NORM_SAFE_BOUND * EXTRACTION_SLACK;
 
     let argued_witness_bound = projection_l2_norm / JL_ALPHA_RP;
 
@@ -335,7 +337,8 @@ pub fn check_simple_round(
 
     let projection_l2_norm = norms::l2_norm_coeffs(projection_image_ct_data);
 
-    let extracted_witness_bound = folded_witness_l2_norm * T_OP_NORM_BOUND * EXTRACTION_SLACK;
+    let extracted_witness_bound =
+        folded_witness_l2_norm * SPECTRAL_OP_NORM_SAFE_BOUND * EXTRACTION_SLACK;
 
     let argued_witness_bound = projection_l2_norm / JL_ALPHA_RP;
     let worse_bound = if extracted_witness_bound > argued_witness_bound {
