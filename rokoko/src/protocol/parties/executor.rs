@@ -345,7 +345,7 @@ mod tests {
     use std::num::NonZeroUsize;
 
     #[test]
-    fn round_boundary_extraction() {
+    fn round_boundary_extraction_cut_3() {
         init_common();
         let mut run = execute_to_boundary(NonZeroUsize::new(3).unwrap());
 
@@ -369,7 +369,11 @@ mod tests {
         assert_eq!(run.crs.cks.len(), run.verifier_crs.structured_cks.len());
         let first_row = &run.verifier_crs.structured_cks[0][0];
         assert_eq!(first_row.tensor_layers.len(), 1);
+    }
 
+    #[test]
+    fn round_boundary_extraction_cut_4() {
+        init_common();
         let run4 = execute_to_boundary(NonZeroUsize::new(4).unwrap());
         assert_eq!(run4.prover.witness.height, 512);
         assert_eq!(run4.prover.witness.width, 8);

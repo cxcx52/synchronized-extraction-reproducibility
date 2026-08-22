@@ -464,6 +464,26 @@ mod tests {
     }
 
     #[test]
+    fn challenge_stream_fingerprint() {
+        let mut hasher = HashWrapper::new();
+        let mut digest = blake3::Hasher::new();
+        for _ in 0..100 {
+            let (c, _) = sample_short_challenge(&mut hasher);
+            let bytes: [u8; N] = std::array::from_fn(|i| c[i] as u8);
+            digest.update(&bytes);
+        }
+        let actual = digest.finalize().to_hex().to_string();
+        assert_eq!(actual, EXPECTED_FINGERPRINT);
+    }
+
+    #[cfg(not(feature = "challenge-weight-34"))]
+    const EXPECTED_FINGERPRINT: &str =
+        "0d38d7c02e497fbe84bb0f5e04829059c8232b39285c0060f47b97e22484636b";
+    #[cfg(feature = "challenge-weight-34")]
+    const EXPECTED_FINGERPRINT: &str =
+        "2e555dcacc6409b80937c17c27d1411a6dd8b480b82432b12dc60d55adeb1aae";
+
+    #[test]
     fn ring_output_encoding_is_consistent() {
         let mut hasher = HashWrapper::new();
         let mut elem = RingElement::new(Representation::Coefficients);

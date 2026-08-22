@@ -1333,7 +1333,6 @@ impl SizeableProof for QuadraticExtension {
 #[cfg(test)]
 mod tests {
     use crate::common::init_common;
-    use rand::SeedableRng;
 
     use super::*;
 

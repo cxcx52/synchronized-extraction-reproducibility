@@ -2,6 +2,10 @@ use crate::common::arithmetic::field_to_ring_element_into;
 use crate::common::config::{DEGREE, MOD_Q};
 use crate::common::ring_arithmetic::*;
 use crate::common::short_challenge::sample_short_challenge_into;
+
+const fn u64_rejection_threshold(modulus: u64) -> u64 {
+    u64::MAX - (u64::MAX % modulus)
+}
 use crate::common::sumcheck_element::SumcheckElement;
 use crate::hexl::bindings::eltwise_reduce_mod;
 use blake3::Hasher;
@@ -109,7 +113,7 @@ impl HashWrapper {
     /// makes every residue class occur the same number of times.
     pub fn sample_u64_mod_q(&mut self) -> u64 {
         self.dbg_fs("sample_u64_mod_q", 1);
-        let threshold = u64::MAX - (u64::MAX % MOD_Q);
+        let threshold = u64_rejection_threshold(MOD_Q);
         loop {
             let x = self.sample_u64();
             if x < threshold {
@@ -398,6 +402,14 @@ mod tests {
             assert_eq!(x1, x2);
             assert!(x1 < MOD_Q);
         }
+    }
+
+    #[test]
+    fn sample_u64_mod_q_rejection_interval_is_exact() {
+        let threshold = u64_rejection_threshold(MOD_Q);
+        assert_eq!(threshold % MOD_Q, 0);
+        let sample_space = 1u128 << 64;
+        assert_eq!(sample_space - threshold as u128, sample_space % MOD_Q as u128);
     }
 
     #[test]

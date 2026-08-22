@@ -86,8 +86,7 @@ fn bench_short_challenge(c: &mut Criterion) {
     group.bench_function("op_norm_sq_sparse", |bencher| {
         let positions: [u8; TAU] =
             std::array::from_fn(|i| ((i * 13 + 1) % rokoko::common::config::DEGREE) as u8);
-        let signs: [i8; TAU] =
-            std::array::from_fn(|i| if i % 3 == 0 { -1 } else { 1 });
+        let signs: [i8; TAU] = std::array::from_fn(|i| if i % 3 == 0 { -1 } else { 1 });
         bencher.iter(|| {
             let v = rokoko::common::short_challenge::op_norm_sq_sparse(
                 black_box(&positions),
