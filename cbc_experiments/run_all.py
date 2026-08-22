@@ -9,7 +9,7 @@ for script in [
     ROOT / "reproduce_cyclo_estimator.py",
     ROOT / "benchmark_integer_ipa.py",
 ]:
-    print(f"\n=== Running {script.name} ===")
+    print(f"\n=== Running {script.name} ===", flush=True)
     subprocess.run(
         [sys.executable, str(script)],
         check=True
