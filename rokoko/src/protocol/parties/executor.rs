@@ -356,8 +356,8 @@ mod tests {
         init_common();
         let mut run = execute_to_boundary(NonZeroUsize::new(3).unwrap());
 
-        assert_eq!(run.prover.witness.height, 256);
-        assert_eq!(run.prover.witness.width, 32);
+        assert_eq!(run.prover.witness.height, 512);
+        assert_eq!(run.prover.witness.width, 16);
         assert_eq!(run.verifier.commitment_root.len(), 1);
         assert_eq!(run.prover.claims.len(), 2);
         assert_eq!(run.verifier.claims.len(), 2);
