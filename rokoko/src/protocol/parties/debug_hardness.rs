@@ -901,17 +901,9 @@ mod tests {
         certify_registered_config("exact-p29", &P_EN_NARROW_LARGE);
     }
 
-    /// The small performance chain is intentionally not part of the passing
-    /// certification set.  This audit prints every gate and SIS estimate so a
-    /// centered-modulus obstruction cannot be hidden by the first assertion.
     #[test]
-    #[ignore = "p26 has a known centered-uniqueness obstruction"]
-    fn audit_blocked_p26_bounds() {
-        assert!(
-            exhaustive_audit_enabled(),
-            "set ROKOKO_AUDIT_HARDNESS=1 for non-asserting diagnostics"
-        );
-        certify_registered_config("p26-blocked", &P_SMALL);
+    fn registered_p26_bounds_are_128_bit_certified() {
+        certify_registered_config("p26", &P_SMALL);
     }
 
     #[test]

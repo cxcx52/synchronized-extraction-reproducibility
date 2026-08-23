@@ -22,17 +22,17 @@ these two moduli. In particular, the repository configurations named
 |---|---|---|---|---|---|
 | performance p28 | pass | pass, tau=32/tau=34 plus combined boundary stream | pass | pass | blocked by the q_perf CRT obstruction |
 | performance p30 | pass | pass, tau=32/tau=34 | pass | pass | blocked by the q_perf CRT obstruction |
-| performance p26 | pass | pass, tau=32/tau=34 | **fail at r1 and r2** | all estimator entries pass, but rank cannot repair the gates | blocked |
+| performance p26 | pass | pass, recalibrated tau=32/tau=34 full chains plus boundary streams | pass | pass (minimum 131 bits) | q_perf CRT obstruction still applies to a whole-ring single-fork claim |
 | exact-norm p26 | pass | pass, tau=32/tau=34 | pass | pass | q_perf CRT obstruction still applies to a whole-ring single-fork claim |
 | exact-norm p28 | pass | pass, tau=32/tau=34 | pass | pass | q_perf CRT obstruction still applies to a whole-ring single-fork claim |
 | exact-norm p29 | pass | pass, tau=32 full-chain run on 127 GiB host | pass | pass (minimum 131 bits) | q_perf CRT obstruction still applies to a whole-ring single-fork claim |
 | exact-norm p30 | uncalibrated | not closed | not closed | not closed | not closed; configured as an OOM-only line |
 
-Thus p28, p30, exact-norm p26, exact-norm p28, and exact-norm p29 close the
-requested three layers of (1) capacity, (2) empirical completeness calibration,
-and (3) centered/SIS certification. This is not a full 128-bit extraction
-theorem for `q_perf`: the fixed-weight unit-difference ledger has a separate
-rigorous roughly 100-bit obstruction below.
+Thus p26, p28, p30, exact-norm p26, exact-norm p28, and exact-norm p29 close
+the requested three layers of (1) capacity, (2) empirical completeness
+calibration, and (3) centered/SIS certification. This is not a full 128-bit
+extraction theorem for `q_perf`: the fixed-weight unit-difference ledger has a
+separate rigorous roughly 100-bit obstruction below.
 
 ## Final registered geometry
 
@@ -42,7 +42,7 @@ is shown as `height x width` in execution order.
 
 | configuration | registered chain geometry |
 |---|---|
-| performance p26 | `8192x128 -> 8192x4 -> 1024x32 -> 512x16 -> 512x8 -> 512x8 -> 1024x4` |
+| performance p26 | `8192x128 -> 8192x4 -> 2048x16 -> 1024x8 -> 512x8 -> 512x8 -> 1024x4` |
 | performance p28 | `16384x256 -> 8192x8 -> 2048x16 -> 512x16 -> 512x8 -> 512x8 -> 1024x4` |
 | performance p30 | `32768x512 -> 16384x8 -> 2048x32 -> 512x16 -> 512x8 -> 512x8 -> 1024x4` |
 | exact-norm p26 | `8192x128 -> 16384x8 -> 8192x8 -> 1024x32 -> 512x16 -> 512x8 -> 512x8 -> 1024x4` |
@@ -83,12 +83,12 @@ The performance roots have `Projection::Skip` and therefore no root gate.
 
 | configuration | round | width | gate lhs | result |
 |---|---:|---:|---:|---|
-| p26 | r1 | 32 | 873525941055930.1 | **fail** |
-| p26 | r2 | 16 | 565046036068864.9 | **fail** |
-| p26 | r3 | 8 | 286332637421228.9 | pass |
-| p26 | r4 | 8 | 178790737241685.22 | pass |
-| p26 | r5 | 4 | 127322016558406.63 | pass |
-| p26 | r6 simple | 4 | 464785626019109.56 | pass |
+| p26 | r1 | 16 | 462481290421503.7 | pass |
+| p26 | r2 | 8 | 310195700383646.5 | pass |
+| p26 | r3 | 8 | 231821221541950.53 | pass |
+| p26 | r4 | 8 | 259526699790132.22 | pass |
+| p26 | r5 | 4 | 105382929645882.86 | pass |
+| p26 | r6 simple | 4 | 524782523278880.44 | pass |
 | p28 | r1 | 16 | 318590592802478.25 | pass |
 | p28 | r2 | 16 | 344242224163225.06 | pass |
 | p28 | r3 | 8 | 123472489286132.58 | pass |
@@ -140,31 +140,24 @@ round has no recursive commitment at that depth.
 
 | configuration | basic bits by round | recursive outer bits by sumcheck round | recursive inner bits by sumcheck round |
 |---|---|---|---|
-| p26 | `[137,148,140,136,137,136,136]` | `[158,136,134,135,139,131,-]` | `[149,141,136,136,136,-,-]` |
+| p26 | `[136,135,137,137,136,138,136]` | `[158,135,142,136,136,131,-]` | `[149,141,136,136,136,-,-]` |
 | p28 | `[138,138,137,137,138,146,136]` | `[151,137,137,142,137,131,-]` | `[149,141,136,136,136,-,-]` |
 | p30 | `[155,136,137,136,142,137,136]` | `[144,136,139,137,140,131,-]` | `[149,141,136,136,136,-,-]` |
 | exact-norm p26 | `[164,198,162,135,140,155,140,136]` | `[312,226,153,139,136,141,131,-]` | `[141,141,141,136,136,136,-,-]` |
 | exact-norm p28 | `[152,183,147,136,136,146,136,136]` | `[275,202,141,135,145,134,131,-]` | `[141,141,141,136,136,136,-,-]` |
 | exact-norm p29 | `[148,177,143,140,137,141,146,135]` | `[258,193,135,167,136,137,131,-]` | `[141,141,141,136,136,136,-,-]` |
 
-All displayed SIS estimates are at least 128 bits. This does not rescue p26:
-its r1/r2 failure is a centered-modulus failure, which is independent of rank.
+All displayed SIS estimates are at least 128 bits.
 
-## Minimal p26 repair interface
+## p26 repair closure
 
-At r1 the current width-32 gate exceeds `q/2` by a factor of about 1.552. The
-largest integral width allowed by the current projection bound is 20, hence a
-power-of-two layout needs width at most 16. Capacity then requires doubling
-the corresponding height. At r2, the current width-16 gate misses by about
-0.37%; with the current bound it needs either:
-
-- a proved projection bound smaller by about 0.19%; or
-- a power-of-two width reduction to 8.
-
-Changing r1 alters the input geometry and empirical norms of downstream
-rounds, so the minimal honest implementation change is a Small-specific
-`p2`/downstream layout followed by complete tau=32/tau=34 recalibration. Rank
-changes alone are not a repair.
+The Small-specific repair replaces `1024x32` by `2048x16` and `512x16` by
+`1024x8`, preserving the element capacity at both stages. Fresh tau=32 and
+tau=34 full-chain runs and their two-prefix boundary-regression streams were
+combined coordinatewise, then the standard 2% margin was installed. The
+former r1/r2 failures now pass at `4.624812904215037e14` and
+`3.101957003836465e14`, respectively. No rank increase was used to bypass a
+centered gate.
 
 ## q_perf fixed-weight CRT obstruction
 
@@ -209,15 +202,17 @@ theorem line is unaffected.
 - Rustdoc suite: pass (the two displayed challenge formulas are explicitly
   marked as text rather than accidental Rust doctests).
 - Formal-threshold combined boundary regression: passed (`311.23 s`).
-- Static p28/p30/exact-norm-p26/exact-norm-p28/exact-norm-p29 centered/SIS
-  certification: passed.
-- Explicit non-asserting p26 diagnostic: traversed all rounds and recorded the
-  two centered failures above; every estimator entry was at least 131 bits.
+- Static p26/p28/p30/exact-norm-p26/exact-norm-p28/exact-norm-p29
+  centered/SIS certification: passed.
+- Redesigned p26 static certification: all six centered gates and all 45
+  estimator entries pass; the minimum estimator output is 131 bits.
+- Redesigned p26 full Rust library regression: 156 passed, 0 failed, 2 ignored.
 - Parameter/capacity tests under default, `challenge-weight-34`, `p-26`,
   `p-29`, and `p-30`: 7 passed for each feature set.
-- Long full-chain empirical calibration: p26, p28, p30, exact-norm p26, and
-  exact-norm p28 passed under both tau=32 and tau=34. Exact-norm p29 completed
-  its tau=32 run on the 127 GiB host with every PB/FB/NB entry finite.
+- Long full-chain empirical calibration: the redesigned p26, p28, p30,
+  exact-norm p26, and exact-norm p28 passed under both tau=32 and tau=34.
+  Exact-norm p29 completed its tau=32 run on the 127 GiB host with every
+  PB/FB/NB entry finite.
 - `fixed_weight_crt_obstruction.py`: passed and regenerated the exact integer
   ledger.
 - `fixed_weight_hardness_audit.py`: passed and regenerated the current p28
@@ -238,18 +233,20 @@ Publication benchmarks must be rerun for p28 and p30 because the commitment
 ranks, recursive layout, sumcheck relations, projection widths, and norm
 checks changed. The long calibration timings are correctness diagnostics and
 must not be reported as optimized benchmark timings. Exact-norm p26/p28 also
-need reruns if their performance is reported. p26 should be benchmarked only
-after its centered-gate redesign and recalibration. Exact-norm p29 is now
-correctness-closed but should be benchmarked only with the other final lines
-after the remaining technical work is complete.
+need reruns if their performance is reported. The redesigned p26 and
+exact-norm p29 are correctness-closed, but should be benchmarked only with the
+other final lines after the remaining technical work is complete.
 
 Reproduction artifacts:
 
 - `proof_audit/generated/fixed_weight_hardness_audit.json`
 - `proof_audit/generated/fixed_weight_crt_obstruction.json`
 - `proof_audit/generated/exact_p29_calibration_audit.json`
+- `proof_audit/generated/p26_recalibration_audit.json`
 - `proof_audit/fixed_weight_hardness_audit.py`
 - `proof_audit/fixed_weight_crt_obstruction.py`
 - `proof_audit/exact_p29_calibration_audit.py`
 - `proof_audit/exact_p29_calibration_audit.md`
+- `proof_audit/p26_recalibration_audit.py`
+- `proof_audit/p26_recalibration_audit.md`
 - Rust static certifier in `rokoko/src/protocol/parties/debug_hardness.rs`

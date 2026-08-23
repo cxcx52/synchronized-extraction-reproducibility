@@ -61,14 +61,19 @@ pub const NORM_MARGIN: f64 = 1.02;
 const CERTIFIED_BASIC_COMMITMENT_RANK: usize = 7;
 const CERTIFIED_OUTER_RECURSION_RANK: usize = 4;
 
+// Fixed-weight performance-p26 calibration. Entries are coordinatewise maxima
+// from the deterministic tau=32/tau=34 full chains and both prefixes of their
+// boundary-regression streams. NORM_MARGIN is applied by the assignment
+// helpers. This is an empirical completeness ledger, not a malicious-prover
+// norm theorem.
 const NB_P_26: [[f64; 2]; 7] = [
     [9688355.015184827, 3732.067657478894],
-    [31224594.71942014, 4574.773764898107],
-    [33352943.98267973, 5288.310410707752],
-    [32844278.124664545, 5285.884599572715],
-    [26053242.244566184, 5266.335348228406],
-    [5419405.900582369, 231682.6752543228],
-    [31397269.239040073, 57883769.33763827],
+    [31955598.685107652, 4618.282797750697],
+    [21237279.230148338, 5290.237707324691],
+    [30482311.339410435, 5313.507504464447],
+    [31225883.499218643, 5250.408079378211],
+    [5628297.382666271, 230952.77182359167],
+    [32972167.774389204, 61506376.39596541],
 ];
 // Fixed-weight p-28 calibration. Entries are coordinatewise maxima from the
 // deterministic tau=32 and tau=34 full-chain calibration runs and the
@@ -130,11 +135,11 @@ const NB_P_EN_29: [[f64; 2]; 8] = [
 // only while refreshing the tables and is rejected by the hardness audit.
 const PB_P_26: [f64; 6] = [
     0.0,
-    28055846.050965242,
-    31911144.5021073,
-    32125573.46601889,
-    25385631.394395493,
-    30295785.28610122,
+    28870050.818056054,
+    33437465.32426311,
+    28906270.144289907,
+    30584859.105609626,
+    27562308.781788617,
 ];
 const PB_P_28: [f64; 6] = [
     0.0,
@@ -180,12 +185,12 @@ const PB_P_EN_29: [f64; 7] = [
     22645685.164770506,
 ];
 const FB_P_26: [f64; 6] = [
-    28752557.389113426,
-    13360008.664023874,
-    24526291.55406357,
-    31888317.6073836,
-    31003649.97547911,
-    32602973.57875321,
+    31332894.601975046,
+    33529894.410260584,
+    30766569.356588393,
+    30884390.879491862,
+    32480282.823585525,
+    26726407.77466259,
 ];
 const FB_P_28: [f64; 6] = [
     26360585.84413571,
@@ -499,7 +504,10 @@ fn p_plain_2(size: SizeConfig) -> AuxSumcheckConfig {
 
 fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
     let witness_height = size.pick(
-        2usize.pow(10),
+        // The performance-p26 predecessor's certified projection radius
+        // cannot satisfy centered uniqueness with 32 successor columns.
+        // Preserve the 2^15-ring-element capacity while halving the width.
+        2usize.pow(11),
         2usize.pow(11),
         // The exact-p29 predecessor's certified projection radius cannot
         // satisfy centered uniqueness with 32 successor columns.  Preserve
@@ -509,7 +517,7 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
     );
     AuxSumcheckConfig {
         witness_height,
-        witness_width: size.pick(2usize.pow(5), 2usize.pow(4), 2usize.pow(4), 2usize.pow(5)),
+        witness_width: size.pick(2usize.pow(4), 2usize.pow(4), 2usize.pow(4), 2usize.pow(5)),
         projection_ratio: size.pick(2usize.pow(5), 2usize.pow(5), 2usize.pow(8), 2usize.pow(8)),
         projection_height: 2usize.pow(8),
         basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
@@ -667,8 +675,8 @@ pub fn p_3(size: SizeConfig) -> AuxSumcheckConfig {
     AuxSumcheckConfig {
         // NarrowLarge needs the larger packed output created by its reshaped p2.
         // The width-eight layout also strengthens p2's centered-uniqueness gate.
-        witness_height: size.pick(2usize.pow(9), 2usize.pow(9), 2usize.pow(11), 2usize.pow(9)),
-        witness_width: size.pick(2usize.pow(4), 2usize.pow(4), 2usize.pow(3), 2usize.pow(4)),
+        witness_height: size.pick(2usize.pow(10), 2usize.pow(9), 2usize.pow(11), 2usize.pow(9)),
+        witness_width: size.pick(2usize.pow(3), 2usize.pow(4), 2usize.pow(3), 2usize.pow(4)),
         projection_ratio: 2usize.pow(5),
         projection_height: 2usize.pow(8),
         basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
