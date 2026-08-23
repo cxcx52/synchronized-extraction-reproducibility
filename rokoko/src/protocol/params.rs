@@ -706,7 +706,7 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
 pub static P_LAST: LazyLock<SimpleConfig> = LazyLock::new(|| SimpleConfig {
     witness_height: 2usize.pow(9),
     witness_width: 2usize.pow(2),
-    projection_ratio: 2usize.pow(7),
+    projection_ratio: 2usize.pow(8),
     projection_height: 2usize.pow(8),
     basic_commitment_rank: 4,
     projection_nof_batches: 2,
