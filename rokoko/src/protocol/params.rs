@@ -62,13 +62,13 @@ const CERTIFIED_BASIC_COMMITMENT_RANK: usize = 7;
 const CERTIFIED_OUTER_RECURSION_RANK: usize = 4;
 
 const NB_P_26: [[f64; 2]; 7] = [
-    [46889.51181234456, 2242.093664412796],
-    [136249.25466218154, 2703.859463803546],
-    [88564.70651450272, 3127.9992007671613],
-    [51809.033633141626, 3129.3796509851595],
-    [35428.87688030768, 3111.4773018616092],
-    [195669.4144366973, 195560.31913197524],
-    [913225.8991914323, 2088252.7611613495],
+    [9688355.015184827, 3732.067657478894],
+    [31224594.71942014, 4574.773764898107],
+    [33352943.98267973, 5288.310410707752],
+    [32844278.124664545, 5285.884599572715],
+    [26053242.244566184, 5266.335348228406],
+    [5419405.900582369, 231682.6752543228],
+    [31397269.239040073, 57883769.33763827],
 ];
 // Fixed-weight p-28 calibration. Entries are coordinatewise maxima from the
 // deterministic tau=32 and tau=34 full-chain calibration runs; NORM_MARGIN is
@@ -127,7 +127,14 @@ const NB_P_EN_29: [[f64; 2]; 8] = [
 // Component-local recomposed-projection norm ledgers.  These are populated by
 // the same deterministic completeness calibration as NB_P_*; infinity is used
 // only while refreshing the tables and is rejected by the hardness audit.
-const PB_P_26: [f64; 6] = [f64::INFINITY; 6];
+const PB_P_26: [f64; 6] = [
+    0.0,
+    28055846.050965242,
+    31911144.5021073,
+    32125573.46601889,
+    25385631.394395493,
+    30295785.28610122,
+];
 const PB_P_28: [f64; 6] = [
     0.0,
     23961662.027517207,
@@ -140,7 +147,14 @@ const PB_P_30: [f64; 6] = [f64::INFINITY; 6];
 const PB_P_EN_26: [f64; 7] = [f64::INFINITY; 7];
 const PB_P_EN_28: [f64; 7] = [f64::INFINITY; 7];
 const PB_P_EN_29: [f64; 7] = [f64::INFINITY; 7];
-const FB_P_26: [f64; 6] = [f64::INFINITY; 6];
+const FB_P_26: [f64; 6] = [
+    28752557.389113426,
+    13360008.664023874,
+    24526291.55406357,
+    31888317.6073836,
+    31003649.97547911,
+    32602973.57875321,
+];
 const FB_P_28: [f64; 6] = [
     26360585.84413571,
     27583490.76053078,
