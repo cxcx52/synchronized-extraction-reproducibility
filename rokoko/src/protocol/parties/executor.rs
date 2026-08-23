@@ -349,6 +349,7 @@ pub fn execute_snark() {
 mod tests {
     use super::{execute, execute_snark, execute_to_boundary};
     use crate::common::init_common;
+    use crate::protocol::params::compiled_size;
     use std::num::NonZeroUsize;
 
     #[test]
@@ -356,8 +357,10 @@ mod tests {
         init_common();
         let mut run = execute_to_boundary(NonZeroUsize::new(3).unwrap());
 
-        assert_eq!(run.prover.witness.height, 1024);
-        assert_eq!(run.prover.witness.width, 8);
+        let (cut3_height, cut3_width) =
+            compiled_size().pick((1024, 8), (512, 16), (2048, 8), (512, 16));
+        assert_eq!(run.prover.witness.height, cut3_height);
+        assert_eq!(run.prover.witness.width, cut3_width);
         assert_eq!(run.verifier.commitment_root.len(), 1);
         assert_eq!(run.prover.claims.len(), 2);
         assert_eq!(run.verifier.claims.len(), 2);
@@ -378,8 +381,10 @@ mod tests {
         assert_eq!(first_row.tensor_layers.len(), 1);
 
         let run4 = execute_to_boundary(NonZeroUsize::new(4).unwrap());
-        assert_eq!(run4.prover.witness.height, 512);
-        assert_eq!(run4.prover.witness.width, 8);
+        let (cut4_height, cut4_width) =
+            compiled_size().pick((512, 8), (512, 8), (1024, 8), (512, 8));
+        assert_eq!(run4.prover.witness.height, cut4_height);
+        assert_eq!(run4.prover.witness.width, cut4_width);
         assert_eq!(
             run4.prover.evaluation_points,
             run4.verifier.evaluation_points

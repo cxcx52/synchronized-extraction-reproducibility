@@ -338,7 +338,9 @@ fn test_random_mod_q() {
         }
     }
 
-    debug_assert_eq!(inf_norm < (1u64 << (base_log - 1)), true);
+    // Balanced digits lie in [-2^(b-1), 2^(b-1)), so the negative endpoint
+    // has absolute value exactly 2^(b-1).
+    debug_assert_eq!(inf_norm <= (1u64 << (base_log - 1)), true);
 }
 
 #[test]
