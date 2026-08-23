@@ -685,8 +685,8 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 9,
-            decomposition_chunks: 6,
+            decomposition_base_log: 7,
+            decomposition_chunks: 8,
             rank: 2,
             next: None,
         },
