@@ -3,7 +3,9 @@
 //!
 //! The manuscript uses the uniform distribution
 //!
-//!     D_tau = { c in {-1,0,1}^N : wt(c) = tau }.
+//! ```text
+//! D_tau = { c in {-1,0,1}^N : wt(c) = tau }.
+//! ```
 //!
 //! The sampler below realizes this distribution directly: partial Fisher--Yates
 //! chooses a uniform support of size `TAU`, and independent sign bits choose the
@@ -12,7 +14,9 @@
 //! For coefficient-l_infinity analysis, negacyclic multiplication by a signed
 //! ternary polynomial c has induced operator norm
 //!
-//!     ||M_c||_{infinity -> infinity} = sum_j |c_j| = wt(c) = TAU.
+//! ```text
+//! ||M_c||_{infinity -> infinity} = sum_j |c_j| = wt(c) = TAU.
+//! ```
 //!
 //! The optional spectral routines below are kept only for diagnostics.  Without
 //! spectral rejection, the rigorous generic spectral bound is also at most
