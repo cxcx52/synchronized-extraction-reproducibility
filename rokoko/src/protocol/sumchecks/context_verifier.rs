@@ -150,4 +150,7 @@ pub struct NormCheckVerifierContext {
 
     pub selectors: Vec<ElephantCell<SelectorEqEvaluation>>,
     pub output_2: ElephantCell<ProductSumcheckEvaluation>,
+    pub folded_output: ElephantCell<ProductSumcheckEvaluation>,
+    pub projection_selector: Option<ElephantCell<SelectorEqEvaluation>>,
+    pub projection_output: Option<ElephantCell<ProductSumcheckEvaluation>>,
 }

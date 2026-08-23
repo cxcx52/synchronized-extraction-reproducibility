@@ -32,6 +32,8 @@ fn batch_claims(
     rcs_projection_1_constant_term_claims: Option<&[RingElement]>,
     norm_claim: &RingElement,
     most_inner_norm_claim: &RingElement,
+    folded_norm_claim: &RingElement,
+    projection_norm_claim: Option<&RingElement>,
     combination: &[RingElement],
 ) -> RingElement {
     let mut batched_claim = RingElement::zero(Representation::IncompleteNTT);
@@ -127,6 +129,18 @@ fn batch_claims(
     let mut weighted_norm = most_inner_norm_claim.clone();
     weighted_norm *= &combination[idx];
     batched_claim += &weighted_norm;
+    idx += 1;
+
+    let mut weighted_norm = folded_norm_claim.clone();
+    weighted_norm *= &combination[idx];
+    batched_claim += &weighted_norm;
+    idx += 1;
+
+    if let Some(projection_norm_claim) = projection_norm_claim {
+        let mut weighted_norm = projection_norm_claim.clone();
+        weighted_norm *= &combination[idx];
+        batched_claim += &weighted_norm;
+    }
 
     batched_claim
 }
@@ -203,6 +217,10 @@ pub fn sumcheck_verifier(
 
     hash_wrapper.update_with_ring_element(&round_proof.norm_claim);
     hash_wrapper.update_with_ring_element(&round_proof.most_inner_norm_claim);
+    hash_wrapper.update_with_ring_element(&round_proof.folded_norm_claim);
+    if let Some(projection_norm_claim) = &round_proof.projection_norm_claim {
+        hash_wrapper.update_with_ring_element(projection_norm_claim);
+    }
     if let Some(constant_term_claims) = &round_proof.constant_term_claims {
         hash_wrapper.update_with_ring_element_slice(constant_term_claims);
     }
@@ -235,6 +253,8 @@ pub fn sumcheck_verifier(
         round_proof.constant_term_claims.as_deref(),
         &round_proof.norm_claim,
         &round_proof.most_inner_norm_claim,
+        &round_proof.folded_norm_claim,
+        round_proof.projection_norm_claim.as_ref(),
         &combination,
     );
 
@@ -260,6 +280,34 @@ pub fn sumcheck_verifier(
         (most_inner_norm_ct as f64).sqrt(),
         config.most_inner_norm_bound,
     );
+
+    let folded_norm_ct = round_proof
+        .folded_norm_claim
+        .constant_term_from_incomplete_ntt();
+    assert_norm_bounded(
+        "decomposed folded-witness norm claim via inner-product",
+        (folded_norm_ct as f64).sqrt(),
+        config.folded_decomposed_norm_bound,
+    );
+
+    match (
+        &config.projection_recursion,
+        &round_proof.projection_norm_claim,
+    ) {
+        (Projection::Skip, None) => {}
+        (Projection::Skip, Some(_)) => {
+            panic!("projection-free round must not carry a projection norm claim")
+        }
+        (_, Some(projection_norm_claim)) => {
+            let projection_norm_ct = projection_norm_claim.constant_term_from_incomplete_ntt();
+            assert_norm_bounded(
+                "decomposed projection norm claim via inner-product",
+                (projection_norm_ct as f64).sqrt(),
+                config.projection_decomposed_norm_bound,
+            );
+        }
+        (_, None) => panic!("projection round is missing its component-local norm claim"),
+    }
 
     let mut batched_claim_over_field = {
         let batched_claim = {

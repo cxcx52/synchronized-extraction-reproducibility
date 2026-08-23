@@ -56,6 +56,8 @@ pub fn sumcheck(
     RingElement,
     RingElement,
     RingElement,
+    RingElement,
+    Option<RingElement>,
     Vec<Polynomial<QuadraticExtension>>,
     Vec<RingElement>,
     Option<Vec<RingElement>>,
@@ -119,6 +121,16 @@ pub fn sumcheck(
         .output_2
         .borrow_mut()
         .claim();
+    let projection_norm_claim = sumcheck_context
+        .norm_check_sumcheck
+        .projection_output
+        .as_ref()
+        .map(|output| output.borrow_mut().claim());
+    let folded_norm_claim = sumcheck_context
+        .norm_check_sumcheck
+        .folded_output
+        .borrow_mut()
+        .claim();
 
     let constant_term_claims =
         sumcheck_context
@@ -135,6 +147,10 @@ pub fn sumcheck(
     // All prover claims entering the batched combination must be bound by the
     // transcript before the batching challenges are sampled.
     hash_wrapper.update_with_ring_element(&norm_inner_norm_claim);
+    hash_wrapper.update_with_ring_element(&folded_norm_claim);
+    if let Some(projection_norm_claim) = &projection_norm_claim {
+        hash_wrapper.update_with_ring_element(projection_norm_claim);
+    }
     if let Some(constant_term_claims) = &constant_term_claims {
         hash_wrapper.update_with_ring_element_slice(constant_term_claims);
     }
@@ -229,6 +245,8 @@ pub fn sumcheck(
         claim_over_witness_conjugate,
         norm_claim,
         norm_inner_norm_claim,
+        folded_norm_claim,
+        projection_norm_claim,
         polys,
         evaluation_points,
         constant_term_claims,

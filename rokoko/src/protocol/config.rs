@@ -260,6 +260,12 @@ pub struct SumcheckConfig {
 
     pub norm_bound: f64,
     pub most_inner_norm_bound: f64,
+    /// Verifier-enforced norm of the decomposed folded-witness component.
+    pub folded_decomposed_norm_bound: f64,
+    /// Verifier-enforced norm of the decomposed projection component in the
+    /// next packed witness.  Recomposition uses this component-local bound,
+    /// not the looser norm of the entire packed witness.
+    pub projection_decomposed_norm_bound: f64,
 
     pub next: Option<Box<Config>>, // for multiple rounds
 }
@@ -380,6 +386,8 @@ pub struct SumcheckRoundProof {
     pub claim_over_witness_conjugate: RingElement,
     pub norm_claim: RingElement,
     pub most_inner_norm_claim: RingElement,
+    pub folded_norm_claim: RingElement,
+    pub projection_norm_claim: Option<RingElement>,
     pub rc_opening_inner: Vec<RingElement>,
     pub rc_coarse_projection_inner: Option<Vec<RingElement>>,
     pub rc_fine_projection_inner: Option<(Vec<RingElement>, Vec<RingElement>)>,
@@ -403,12 +411,16 @@ impl SizeableProof for SumcheckRoundProof {
         tracing::debug!("Polys size: {} KB, ", to_kb(size));
 
         let mut claims_size = 0;
-        let claims = vec![
+        let mut claims = vec![
             &self.claim_over_witness,
             &self.claim_over_witness_conjugate,
             &self.norm_claim,
             &self.most_inner_norm_claim,
+            &self.folded_norm_claim,
         ];
+        if let Some(projection_norm_claim) = &self.projection_norm_claim {
+            claims.push(projection_norm_claim);
+        }
         for claim in claims {
             claims_size += claim.compact_size_in_bits();
         }

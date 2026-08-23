@@ -194,8 +194,7 @@ pub fn prover_round(
         _ => None,
     };
 
-    if let Projection::Skip = &config.projection_recursion {
-    }
+    if let Projection::Skip = &config.projection_recursion {}
     let mut fold_challenge = vec![RingElement::zero(Representation::IncompleteNTT); witness.width];
 
     hash_wrapper.sample_low_op_norm_ring_vec_into(&mut fold_challenge);
@@ -280,9 +279,7 @@ pub fn prover_round(
         &config.commitment_recursion,
     );
 
-
-    let next_witness_span =
-        tracing::info_span!("prover_round::next_witness_and_commit").entered();
+    let next_witness_span = tracing::info_span!("prover_round::next_witness_and_commit").entered();
 
     let next_config_base = config.next.as_ref().map(|c| config_base_from_config(c));
 
@@ -357,12 +354,13 @@ pub fn prover_round(
         )
     };
 
-
     let (
         claim_over_witness,
         claim_over_witness_conjugate,
         norm_claim,
         most_inner_norm_claim,
+        folded_norm_claim,
+        projection_norm_claim,
         sumcheck_transcript,
         evaluation_points,
         constant_term_claims,
@@ -407,8 +405,8 @@ pub fn prover_round(
                     Some(NextRoundCommitment::Recursive(most_inner_commitment)),
                 )
             } else {
-                let (points_outer, points_inner) = evaluation_points
-                    .split_at(next_sumcheck_config.witness_width.ilog2() as usize);
+                let (points_outer, points_inner) =
+                    evaluation_points.split_at(next_sumcheck_config.witness_width.ilog2() as usize);
                 let most_inner_commitment = rc.most_inner_commitment().clone();
                 let next_commitment_with_aux = CommitmentWithAux::from_rc_commitment_with_aux(rc);
                 let next_context = match sumcheck_context.next.as_deref_mut() {
@@ -495,6 +493,8 @@ pub fn prover_round(
         claim_over_witness_conjugate,
         norm_claim,
         most_inner_norm_claim,
+        folded_norm_claim,
+        projection_norm_claim,
         next_round_commitment,
         rc_opening_inner: rc_opening.most_inner_commitment().clone(),
         rc_coarse_projection_inner: rc_coarse_projection
@@ -540,7 +540,8 @@ pub fn prover_round_intermediate(
     );
     tracing::debug!(
         "int opening height: {}, width: {}",
-        opening.rhs.height, opening.rhs.width
+        opening.rhs.height,
+        opening.rhs.width
     );
 
     hash_wrapper.update_with_ring_element_slice(&opening.rhs.data);
@@ -725,7 +726,8 @@ pub fn prover_round_simple(
     );
     tracing::debug!(
         "opening height: {}, width: {}",
-        opening.rhs.height, opening.rhs.width
+        opening.rhs.height,
+        opening.rhs.width
     );
 
     hash_wrapper.update_with_ring_element_slice(&opening.rhs.data);

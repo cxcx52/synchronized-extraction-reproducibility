@@ -785,12 +785,33 @@ pub fn init_sumcheck(crs: &crs::CRS, config: &SumcheckConfig) -> SumcheckContext
         sum_of_selectors.clone(),
         output.clone(),
     ));
+    let folded_output = ElephantCell::new(ProductSumcheck::new(
+        folded_witness_selector_sumcheck.clone(),
+        output.clone(),
+    ));
+
+    let projection_selector = match &config.projection_recursion {
+        Projection::Coarse(proj_config) => {
+            Some(sumcheck_from_prefix(&proj_config.prefix, total_vars))
+        }
+        Projection::Fine(proj_config) => Some(sumcheck_from_prefix(
+            &proj_config.recursion_constant_term.prefix,
+            total_vars,
+        )),
+        Projection::Skip => None,
+    };
+    let projection_output = projection_selector
+        .as_ref()
+        .map(|selector| ElephantCell::new(ProductSumcheck::new(selector.clone(), output.clone())));
 
     let norm_check_sumcheck = NormCheckSumcheckContext {
         conjugated_combined_witness: conjugated_combined_witness_sumcheck.clone(),
         output,
         selectors: most_inner_commitments_selectors,
         output_2,
+        folded_output,
+        projection_selector,
+        projection_output,
     };
 
     // ComVerify sumchecks: Three separate recursive commitment trees
@@ -876,6 +897,10 @@ pub fn init_sumcheck(crs: &crs::CRS, config: &SumcheckConfig) -> SumcheckContext
 
     all_outputs.push(norm_check_sumcheck.output.clone());
     all_outputs.push(norm_check_sumcheck.output_2.clone());
+    all_outputs.push(norm_check_sumcheck.folded_output.clone());
+    if let Some(projection_output) = &norm_check_sumcheck.projection_output {
+        all_outputs.push(projection_output.clone());
+    }
 
     let combiner = ElephantCell::new(Combiner::new(all_outputs));
 

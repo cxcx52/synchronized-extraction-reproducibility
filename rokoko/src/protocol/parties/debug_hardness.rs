@@ -309,7 +309,7 @@ pub fn check_sumcheck_round(
         config.witness_decomposition_chunks,
     ));
     let recomposed_witness_bound = certified_recomposition_bound(
-        config.norm_bound,
+        config.folded_decomposed_norm_bound,
         config.witness_decomposition_base_log,
         config.witness_decomposition_chunks,
     );
@@ -335,7 +335,7 @@ pub fn check_sumcheck_round(
             ));
             (
                 certified_recomposition_bound(
-                    config.norm_bound,
+                    config.projection_decomposed_norm_bound,
                     proj_config.decomposition_base_log,
                     proj_config.decomposition_chunks,
                 ),
@@ -358,7 +358,7 @@ pub fn check_sumcheck_round(
             ));
             (
                 certified_recomposition_bound(
-                    config.norm_bound,
+                    config.projection_decomposed_norm_bound,
                     constant_term.decomposition_base_log,
                     constant_term.decomposition_chunks,
                 ),
@@ -403,13 +403,17 @@ pub fn check_sumcheck_round(
                      decomposed_folded_witness_l2={decomposed_folded_witness_l2} \
                      observed_recomposed_folded_witness_l2={observed_recomposed_folded_witness_l2} \
                      certified_combined_bound={} \
+                     certified_folded_decomposed_bound={} \
+                     certified_projection_decomposed_bound={} \
                      decomposed_projection_l2={decomposed_projection_l2} \
                      observed_recomposed_projection_l2={observed_recomposed_projection_l2} \
                      projection_base_log={projection_base_log} projection_chunks={projection_chunks} \
                      recomposed_projection_bound={recomposed_projection_bound} \
                      argued_witness_bound={argued_witness_bound} \
                      width_times_bound_squared={uniqueness_lhs} q_over_two={uniqueness_rhs}",
-                    config.norm_bound
+                    config.norm_bound,
+                    config.folded_decomposed_norm_bound,
+                    config.projection_decomposed_norm_bound
                 );
             } else {
                 assert!(
@@ -449,9 +453,13 @@ pub fn check_sumcheck_round(
              decomposed_folded_witness_l2={decomposed_folded_witness_l2} \
              observed_recomposed_folded_witness_l2={observed_recomposed_folded_witness_l2} \
              certified_combined_bound={} \
+             certified_folded_decomposed_bound={} \
+             certified_projection_decomposed_bound={} \
              projection_argued_bound={argued_witness_bound} selected_bound={worse_bound} \
              basic_rank={} estimated_security={basic_commitment_security:?}",
             config.norm_bound,
+            config.folded_decomposed_norm_bound,
+            config.projection_decomposed_norm_bound,
             config.basic_commitment_rank
         );
     }

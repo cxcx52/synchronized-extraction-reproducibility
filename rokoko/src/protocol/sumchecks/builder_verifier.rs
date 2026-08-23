@@ -881,12 +881,37 @@ pub fn init_verifier(crs: &VerifierCRS, config: &SumcheckConfig) -> VerifierSumc
         sum_of_selectors.clone(),
         output.clone(),
     ));
+    let folded_output = ElephantCell::new(ProductSumcheckEvaluation::new(
+        folded_witness_selector_evaluation.clone(),
+        output.clone(),
+    ));
+
+    let projection_selector = match &config.projection_recursion {
+        Projection::Coarse(proj_config) => Some(selector_evaluation_from_prefix(
+            &proj_config.prefix,
+            total_vars,
+        )),
+        Projection::Fine(proj_config) => Some(selector_evaluation_from_prefix(
+            &proj_config.recursion_constant_term.prefix,
+            total_vars,
+        )),
+        Projection::Skip => None,
+    };
+    let projection_output = projection_selector.as_ref().map(|selector| {
+        ElephantCell::new(ProductSumcheckEvaluation::new(
+            selector.clone(),
+            output.clone(),
+        ))
+    });
 
     let norm_check_evaluation = NormCheckVerifierContext {
         conjugated_combined_witness_evaluation: conjugated_combined_witness_evaluation.clone(),
         output,
         selectors: most_inner_commitments_selectors,
         output_2,
+        folded_output,
+        projection_selector,
+        projection_output,
     };
 
     let mut all_outputs: Vec<ElephantCell<EvalData>> = vec![];
@@ -921,6 +946,10 @@ pub fn init_verifier(crs: &VerifierCRS, config: &SumcheckConfig) -> VerifierSumc
     }
     all_outputs.push(norm_check_evaluation.output.clone());
     all_outputs.push(norm_check_evaluation.output_2.clone());
+    all_outputs.push(norm_check_evaluation.folded_output.clone());
+    if let Some(projection_output) = &norm_check_evaluation.projection_output {
+        all_outputs.push(projection_output.clone());
+    }
 
     let combiner_evaluation = ElephantCell::new(CombinerEvaluation::new(all_outputs));
     let field_combiner_evaluation = ElephantCell::new(RingToFieldCombinerEvaluation::new(

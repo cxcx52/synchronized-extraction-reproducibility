@@ -174,6 +174,9 @@ impl SumcheckContext {
         for norm_check_sc in self.norm_check_sumcheck.selectors.iter() {
             norm_check_sc.borrow_mut().partial_evaluate(r);
         }
+        if let Some(selector) = &self.norm_check_sumcheck.projection_selector {
+            selector.borrow_mut().partial_evaluate(r);
+        }
     }
 }
 
@@ -280,6 +283,12 @@ pub struct NormCheckSumcheckContext {
     // we also give an opening to subvectors of the combined witness and its conjugate.
     pub selectors: Vec<ElephantCell<SelectorEq<RingElement>>>,
     pub output_2: ElephantCell<ProductSumcheck<RingElement>>,
+    pub folded_output: ElephantCell<ProductSumcheck<RingElement>>,
+
+    /// Selects the base decomposed projection component.  The corresponding
+    /// product sumcheck certifies a component-local norm used by extraction.
+    pub projection_selector: Option<ElephantCell<SelectorEq<RingElement>>>,
+    pub projection_output: Option<ElephantCell<ProductSumcheck<RingElement>>>,
 }
 
 /// FineProj: fine (coefficient-level) projection validity (paper: Pi^proj-f).
