@@ -194,6 +194,10 @@ theorem line is unaffected.
 
 - Default full Rust library suite: 152 passed, 0 failed, 2 ignored
   (`341.74 s`).
+- Workspace targets and examples compile under `cargo test --workspace
+  --no-run`; the `claims` example also executes and verifies all four claims.
+- Rustdoc suite: pass (the two displayed challenge formulas are explicitly
+  marked as text rather than accidental Rust doctests).
 - Formal-threshold combined boundary regression: passed (`311.23 s`).
 - Static p28/p30/exact-norm-p26/exact-norm-p28 centered/SIS certification:
   passed.
