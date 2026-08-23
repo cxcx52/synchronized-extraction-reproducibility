@@ -1,0 +1,1070 @@
+{
+  "status": "proved",
+  "scope": "candidate 50-bit quartic replacement line; not current q_perf and not q_exact",
+  "moduli_separation": {
+    "current_q_perf_quadratic": 1125899906839937,
+    "candidate_q_quartic": 926510094425921,
+    "manuscript_q_exact_degree_eight": 1125899906842273
+  },
+  "arithmetic": {
+    "q": 926510094425921,
+    "q_bits": 50,
+    "q_mod_256": 65,
+    "v2_q_minus_one": 6,
+    "ord_256_q": 4,
+    "base": 3,
+    "base_order_mod_q": 64,
+    "identity": "2q = 3^32 + 1",
+    "factorization": "X^128+1 = product_{u odd mod 64} (X^4-3^u)",
+    "irreducible_factor_count": 32,
+    "irreducible_factor_degree": 4
+  },
+  "primality_certificate": {
+    "n": 926510094425921,
+    "kind": "complete-factorization Lucas certificate",
+    "n_minus_one_factorization": {
+      "2": 6,
+      "5": 1,
+      "17": 1,
+      "41": 1,
+      "193": 1,
+      "21523361": 1
+    },
+    "witnesses": {
+      "2": 3,
+      "5": 5,
+      "17": 2,
+      "41": 2,
+      "193": 2,
+      "21523361": 2
+    },
+    "children": {
+      "2": {
+        "n": 2,
+        "kind": "base-prime"
+      },
+      "5": {
+        "n": 5,
+        "kind": "complete-factorization Lucas certificate",
+        "n_minus_one_factorization": {
+          "2": 2
+        },
+        "witnesses": {
+          "2": 2
+        },
+        "children": {
+          "2": {
+            "n": 2,
+            "kind": "base-prime"
+          }
+        }
+      },
+      "17": {
+        "n": 17,
+        "kind": "complete-factorization Lucas certificate",
+        "n_minus_one_factorization": {
+          "2": 4
+        },
+        "witnesses": {
+          "2": 3
+        },
+        "children": {
+          "2": {
+            "n": 2,
+            "kind": "base-prime"
+          }
+        }
+      },
+      "41": {
+        "n": 41,
+        "kind": "complete-factorization Lucas certificate",
+        "n_minus_one_factorization": {
+          "2": 3,
+          "5": 1
+        },
+        "witnesses": {
+          "2": 3,
+          "5": 2
+        },
+        "children": {
+          "2": {
+            "n": 2,
+            "kind": "base-prime"
+          },
+          "5": {
+            "n": 5,
+            "kind": "complete-factorization Lucas certificate",
+            "n_minus_one_factorization": {
+              "2": 2
+            },
+            "witnesses": {
+              "2": 2
+            },
+            "children": {
+              "2": {
+                "n": 2,
+                "kind": "base-prime"
+              }
+            }
+          }
+        }
+      },
+      "193": {
+        "n": 193,
+        "kind": "complete-factorization Lucas certificate",
+        "n_minus_one_factorization": {
+          "2": 6,
+          "3": 1
+        },
+        "witnesses": {
+          "2": 5,
+          "3": 2
+        },
+        "children": {
+          "2": {
+            "n": 2,
+            "kind": "base-prime"
+          },
+          "3": {
+            "n": 3,
+            "kind": "complete-factorization Lucas certificate",
+            "n_minus_one_factorization": {
+              "2": 1
+            },
+            "witnesses": {
+              "2": 2
+            },
+            "children": {
+              "2": {
+                "n": 2,
+                "kind": "base-prime"
+              }
+            }
+          }
+        }
+      },
+      "21523361": {
+        "n": 21523361,
+        "kind": "complete-factorization Lucas certificate",
+        "n_minus_one_factorization": {
+          "2": 5,
+          "5": 1,
+          "17": 1,
+          "41": 1,
+          "193": 1
+        },
+        "witnesses": {
+          "2": 3,
+          "5": 2,
+          "17": 2,
+          "41": 2,
+          "193": 2
+        },
+        "children": {
+          "2": {
+            "n": 2,
+            "kind": "base-prime"
+          },
+          "5": {
+            "n": 5,
+            "kind": "complete-factorization Lucas certificate",
+            "n_minus_one_factorization": {
+              "2": 2
+            },
+            "witnesses": {
+              "2": 2
+            },
+            "children": {
+              "2": {
+                "n": 2,
+                "kind": "base-prime"
+              }
+            }
+          },
+          "17": {
+            "n": 17,
+            "kind": "complete-factorization Lucas certificate",
+            "n_minus_one_factorization": {
+              "2": 4
+            },
+            "witnesses": {
+              "2": 3
+            },
+            "children": {
+              "2": {
+                "n": 2,
+                "kind": "base-prime"
+              }
+            }
+          },
+          "41": {
+            "n": 41,
+            "kind": "complete-factorization Lucas certificate",
+            "n_minus_one_factorization": {
+              "2": 3,
+              "5": 1
+            },
+            "witnesses": {
+              "2": 3,
+              "5": 2
+            },
+            "children": {
+              "2": {
+                "n": 2,
+                "kind": "base-prime"
+              },
+              "5": {
+                "n": 5,
+                "kind": "complete-factorization Lucas certificate",
+                "n_minus_one_factorization": {
+                  "2": 2
+                },
+                "witnesses": {
+                  "2": 2
+                },
+                "children": {
+                  "2": {
+                    "n": 2,
+                    "kind": "base-prime"
+                  }
+                }
+              }
+            }
+          },
+          "193": {
+            "n": 193,
+            "kind": "complete-factorization Lucas certificate",
+            "n_minus_one_factorization": {
+              "2": 6,
+              "3": 1
+            },
+            "witnesses": {
+              "2": 5,
+              "3": 2
+            },
+            "children": {
+              "2": {
+                "n": 2,
+                "kind": "base-prime"
+              },
+              "3": {
+                "n": 3,
+                "kind": "complete-factorization Lucas certificate",
+                "n_minus_one_factorization": {
+                  "2": 1
+                },
+                "witnesses": {
+                  "2": 2
+                },
+                "children": {
+                  "2": {
+                    "n": 2,
+                    "kind": "base-prime"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "quartic_factors": [
+    {
+      "exponent": 1,
+      "omega": 3
+    },
+    {
+      "exponent": 3,
+      "omega": 27
+    },
+    {
+      "exponent": 5,
+      "omega": 243
+    },
+    {
+      "exponent": 7,
+      "omega": 2187
+    },
+    {
+      "exponent": 9,
+      "omega": 19683
+    },
+    {
+      "exponent": 11,
+      "omega": 177147
+    },
+    {
+      "exponent": 13,
+      "omega": 1594323
+    },
+    {
+      "exponent": 15,
+      "omega": 14348907
+    },
+    {
+      "exponent": 17,
+      "omega": 129140163
+    },
+    {
+      "exponent": 19,
+      "omega": 1162261467
+    },
+    {
+      "exponent": 21,
+      "omega": 10460353203
+    },
+    {
+      "exponent": 23,
+      "omega": 94143178827
+    },
+    {
+      "exponent": 25,
+      "omega": 847288609443
+    },
+    {
+      "exponent": 27,
+      "omega": 7625597484987
+    },
+    {
+      "exponent": 29,
+      "omega": 68630377364883
+    },
+    {
+      "exponent": 31,
+      "omega": 617673396283947
+    },
+    {
+      "exponent": 33,
+      "omega": 926510094425918
+    },
+    {
+      "exponent": 35,
+      "omega": 926510094425894
+    },
+    {
+      "exponent": 37,
+      "omega": 926510094425678
+    },
+    {
+      "exponent": 39,
+      "omega": 926510094423734
+    },
+    {
+      "exponent": 41,
+      "omega": 926510094406238
+    },
+    {
+      "exponent": 43,
+      "omega": 926510094248774
+    },
+    {
+      "exponent": 45,
+      "omega": 926510092831598
+    },
+    {
+      "exponent": 47,
+      "omega": 926510080077014
+    },
+    {
+      "exponent": 49,
+      "omega": 926509965285758
+    },
+    {
+      "exponent": 51,
+      "omega": 926508932164454
+    },
+    {
+      "exponent": 53,
+      "omega": 926499634072718
+    },
+    {
+      "exponent": 55,
+      "omega": 926415951247094
+    },
+    {
+      "exponent": 57,
+      "omega": 925662805816478
+    },
+    {
+      "exponent": 59,
+      "omega": 918884496940934
+    },
+    {
+      "exponent": 61,
+      "omega": 857879717061038
+    },
+    {
+      "exponent": 63,
+      "omega": 308836698141974
+    }
+  ],
+  "exact_strong": {
+    "challenge_distribution": "uniform signed ternary exact Hamming weight 32 in degree 128",
+    "support_size": 6347132397654734652814305971963481292800,
+    "support_log2": 132.22130063735855,
+    "pointwise_repeat_probability": "1/6347132397654734652814305971963481292800",
+    "distinct_difference_nonunit_probability": 0,
+    "operator_norm_bound": 32,
+    "proved_weight_range": "every fixed exact weight tau <= 32",
+    "tight_failure_boundary": "explicit collisions exist at exact weights 33 and 34",
+    "digit_profile_certificate": {
+      "zero_profiles": [
+        [
+          0,
+          0
+        ]
+      ],
+      "plus_or_minus_q_profiles": [
+        [
+          1,
+          31
+        ],
+        [
+          3,
+          29
+        ],
+        [
+          5,
+          27
+        ],
+        [
+          7,
+          25
+        ],
+        [
+          9,
+          23
+        ],
+        [
+          11,
+          21
+        ],
+        [
+          13,
+          19
+        ],
+        [
+          15,
+          17
+        ],
+        [
+          17,
+          15
+        ],
+        [
+          19,
+          13
+        ],
+        [
+          21,
+          11
+        ],
+        [
+          23,
+          9
+        ],
+        [
+          25,
+          7
+        ],
+        [
+          27,
+          5
+        ],
+        [
+          29,
+          3
+        ],
+        [
+          31,
+          1
+        ]
+      ],
+      "active_component_profiles": {
+        "1": {
+          "minimum_equal_weight_cost": null,
+          "weight_32_feasible_profiles": []
+        },
+        "2": {
+          "minimum_equal_weight_cost": 33.0,
+          "weight_32_feasible_profiles": []
+        },
+        "3": {
+          "minimum_equal_weight_cost": null,
+          "weight_32_feasible_profiles": []
+        },
+        "4": {
+          "minimum_equal_weight_cost": 66.0,
+          "weight_32_feasible_profiles": []
+        }
+      },
+      "weight_33_counterexample": {
+        "left_nonzero_indices_and_values": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            8,
+            1
+          ],
+          [
+            12,
+            1
+          ],
+          [
+            16,
+            1
+          ],
+          [
+            20,
+            1
+          ],
+          [
+            24,
+            1
+          ],
+          [
+            28,
+            1
+          ],
+          [
+            32,
+            1
+          ],
+          [
+            36,
+            1
+          ],
+          [
+            40,
+            1
+          ],
+          [
+            44,
+            1
+          ],
+          [
+            48,
+            1
+          ],
+          [
+            52,
+            1
+          ],
+          [
+            56,
+            1
+          ],
+          [
+            60,
+            1
+          ],
+          [
+            64,
+            1
+          ],
+          [
+            68,
+            1
+          ],
+          [
+            72,
+            1
+          ],
+          [
+            76,
+            1
+          ],
+          [
+            80,
+            1
+          ],
+          [
+            84,
+            1
+          ],
+          [
+            88,
+            1
+          ],
+          [
+            92,
+            1
+          ],
+          [
+            96,
+            1
+          ],
+          [
+            100,
+            1
+          ],
+          [
+            104,
+            1
+          ],
+          [
+            108,
+            1
+          ],
+          [
+            112,
+            1
+          ],
+          [
+            116,
+            1
+          ],
+          [
+            120,
+            1
+          ],
+          [
+            124,
+            1
+          ]
+        ],
+        "right_nonzero_indices_and_values": [
+          [
+            0,
+            -1
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            5,
+            -1
+          ],
+          [
+            9,
+            -1
+          ],
+          [
+            13,
+            -1
+          ],
+          [
+            17,
+            -1
+          ],
+          [
+            21,
+            -1
+          ],
+          [
+            25,
+            -1
+          ],
+          [
+            29,
+            -1
+          ],
+          [
+            33,
+            -1
+          ],
+          [
+            37,
+            -1
+          ],
+          [
+            41,
+            -1
+          ],
+          [
+            45,
+            -1
+          ],
+          [
+            49,
+            -1
+          ],
+          [
+            53,
+            -1
+          ],
+          [
+            57,
+            -1
+          ],
+          [
+            61,
+            -1
+          ],
+          [
+            65,
+            -1
+          ],
+          [
+            69,
+            -1
+          ],
+          [
+            73,
+            -1
+          ],
+          [
+            77,
+            -1
+          ],
+          [
+            81,
+            -1
+          ],
+          [
+            85,
+            -1
+          ],
+          [
+            89,
+            -1
+          ],
+          [
+            93,
+            -1
+          ],
+          [
+            97,
+            -1
+          ],
+          [
+            101,
+            -1
+          ],
+          [
+            105,
+            -1
+          ],
+          [
+            109,
+            -1
+          ],
+          [
+            113,
+            -1
+          ],
+          [
+            117,
+            -1
+          ],
+          [
+            121,
+            -1
+          ],
+          [
+            125,
+            -1
+          ]
+        ],
+        "residue_mod_x4_minus_3": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "weight_34_counterexample_adds_common_index": 2
+    }
+  },
+  "structured_approximate_strong_cross_check": {
+    "status": "proved alternative; exact weight 32 is norm-superior, while structured weight 40 is ledger-superior at L=8,M=2",
+    "explanation": "The supplied (10,10,10,9) construction is rigorous, but has gamma=39 and misses 128 bits at L=8,M=2 under the repository 2LM combined ledger.  The balanced (10,10,10,10) variant clears that ledger with gamma=40.  Both are weaker in norm than the exact-strong weight-32 construction; the weight-40 variant is useful only when the L=8,M=2 exposure is mandatory.",
+    "weight_39": {
+      "weights_by_coefficient_class_mod_4": [
+        10,
+        10,
+        10,
+        9
+      ],
+      "operator_norm_bound": 39,
+      "class_supports": [
+        66060533760,
+        66060533760,
+        66060533760,
+        14360985600
+      ],
+      "support_size": 4140096670678479390102250584712780185600000,
+      "support_log2": 141.57064444011462,
+      "per_slot_collision_bound": "16/4140096670678479390102250584712780185600000",
+      "conditioned_distinct_nonunit_bound": "480/4140096670678479390102250584712780185599999",
+      "conditioned_distinct_nonunit_negative_log2": 132.66375384450612,
+      "two_star_combined_ledger": [
+        {
+          "L": 1,
+          "M": 1,
+          "exposure_2LM": 2,
+          "combined_repeat_and_nonunit_negative_log2": 131.6607513563446,
+          "meets_128_bits": true
+        },
+        {
+          "L": 1,
+          "M": 2,
+          "exposure_2LM": 4,
+          "combined_repeat_and_nonunit_negative_log2": 130.6607513563446,
+          "meets_128_bits": true
+        },
+        {
+          "L": 2,
+          "M": 1,
+          "exposure_2LM": 4,
+          "combined_repeat_and_nonunit_negative_log2": 130.6607513563446,
+          "meets_128_bits": true
+        },
+        {
+          "L": 2,
+          "M": 2,
+          "exposure_2LM": 8,
+          "combined_repeat_and_nonunit_negative_log2": 129.6607513563446,
+          "meets_128_bits": true
+        },
+        {
+          "L": 4,
+          "M": 1,
+          "exposure_2LM": 8,
+          "combined_repeat_and_nonunit_negative_log2": 129.6607513563446,
+          "meets_128_bits": true
+        },
+        {
+          "L": 4,
+          "M": 2,
+          "exposure_2LM": 16,
+          "combined_repeat_and_nonunit_negative_log2": 128.6607513563446,
+          "meets_128_bits": true
+        },
+        {
+          "L": 8,
+          "M": 1,
+          "exposure_2LM": 16,
+          "combined_repeat_and_nonunit_negative_log2": 128.6607513563446,
+          "meets_128_bits": true
+        },
+        {
+          "L": 8,
+          "M": 2,
+          "exposure_2LM": 32,
+          "combined_repeat_and_nonunit_negative_log2": 127.66075135634459,
+          "meets_128_bits": false
+        }
+      ]
+    },
+    "weight_40": {
+      "weights_by_coefficient_class_mod_4": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "operator_norm_bound": 40,
+      "class_supports": [
+        66060533760,
+        66060533760,
+        66060533760,
+        66060533760
+      ],
+      "support_size": 19044444685121005194470352689678788853760000,
+      "support_log2": 143.77227830128427,
+      "per_slot_collision_bound": "16/19044444685121005194470352689678788853760000",
+      "conditioned_distinct_nonunit_bound": "480/19044444685121005194470352689678788853759999",
+      "conditioned_distinct_nonunit_negative_log2": 134.86538770567577,
+      "two_star_combined_ledger": [
+        {
+          "L": 1,
+          "M": 1,
+          "exposure_2LM": 2,
+          "combined_repeat_and_nonunit_negative_log2": 133.86238521751423,
+          "meets_128_bits": true
+        },
+        {
+          "L": 1,
+          "M": 2,
+          "exposure_2LM": 4,
+          "combined_repeat_and_nonunit_negative_log2": 132.86238521751423,
+          "meets_128_bits": true
+        },
+        {
+          "L": 2,
+          "M": 1,
+          "exposure_2LM": 4,
+          "combined_repeat_and_nonunit_negative_log2": 132.86238521751423,
+          "meets_128_bits": true
+        },
+        {
+          "L": 2,
+          "M": 2,
+          "exposure_2LM": 8,
+          "combined_repeat_and_nonunit_negative_log2": 131.86238521751423,
+          "meets_128_bits": true
+        },
+        {
+          "L": 4,
+          "M": 1,
+          "exposure_2LM": 8,
+          "combined_repeat_and_nonunit_negative_log2": 131.86238521751423,
+          "meets_128_bits": true
+        },
+        {
+          "L": 4,
+          "M": 2,
+          "exposure_2LM": 16,
+          "combined_repeat_and_nonunit_negative_log2": 130.86238521751423,
+          "meets_128_bits": true
+        },
+        {
+          "L": 8,
+          "M": 1,
+          "exposure_2LM": 16,
+          "combined_repeat_and_nonunit_negative_log2": 130.86238521751423,
+          "meets_128_bits": true
+        },
+        {
+          "L": 8,
+          "M": 2,
+          "exposure_2LM": 32,
+          "combined_repeat_and_nonunit_negative_log2": 129.86238521751423,
+          "meets_128_bits": true
+        }
+      ]
+    }
+  },
+  "two_star_unit_ledger": [
+    {
+      "L": 1,
+      "M": 1,
+      "exposure_2LM": 2,
+      "loss": "2/6347132397654734652814305971963481292800",
+      "negative_log2_loss": 131.22130063735855,
+      "meets_128_bits": true
+    },
+    {
+      "L": 1,
+      "M": 2,
+      "exposure_2LM": 4,
+      "loss": "4/6347132397654734652814305971963481292800",
+      "negative_log2_loss": 130.22130063735855,
+      "meets_128_bits": true
+    },
+    {
+      "L": 2,
+      "M": 1,
+      "exposure_2LM": 4,
+      "loss": "4/6347132397654734652814305971963481292800",
+      "negative_log2_loss": 130.22130063735855,
+      "meets_128_bits": true
+    },
+    {
+      "L": 2,
+      "M": 2,
+      "exposure_2LM": 8,
+      "loss": "8/6347132397654734652814305971963481292800",
+      "negative_log2_loss": 129.22130063735855,
+      "meets_128_bits": true
+    },
+    {
+      "L": 4,
+      "M": 1,
+      "exposure_2LM": 8,
+      "loss": "8/6347132397654734652814305971963481292800",
+      "negative_log2_loss": 129.22130063735855,
+      "meets_128_bits": true
+    },
+    {
+      "L": 4,
+      "M": 2,
+      "exposure_2LM": 16,
+      "loss": "16/6347132397654734652814305971963481292800",
+      "negative_log2_loss": 128.22130063735855,
+      "meets_128_bits": true
+    },
+    {
+      "L": 8,
+      "M": 1,
+      "exposure_2LM": 16,
+      "loss": "16/6347132397654734652814305971963481292800",
+      "negative_log2_loss": 128.22130063735855,
+      "meets_128_bits": true
+    },
+    {
+      "L": 8,
+      "M": 2,
+      "exposure_2LM": 32,
+      "loss": "32/6347132397654734652814305971963481292800",
+      "negative_log2_loss": 127.22130063735855,
+      "meets_128_bits": false
+    }
+  ],
+  "route_comparison": {
+    "new_modulus": "proof-closed while preserving a 50-bit word size and the weight-32 sampler; implementation needs quartic rather than quadratic slots",
+    "joint_multifork_current_q_perf": "black-box accepted-fork conditioning and short Bezout coefficients remain unresolved; no 128-bit current-interface theorem follows",
+    "crt_component_current_q_perf": "a component relation is not the repository whole-ring short SIS relation; standard CRT lifting has no certified centered shortness"
+  },
+  "implementation_boundary": {
+    "current_repository_slots": "64 quadratic slots via two length-64 transforms",
+    "required_slots": "32 quartic slots via four length-32 transforms",
+    "benchmark_inherited": false,
+    "calibration_inherited": false,
+    "word_size_class_preserved": true,
+    "old_bound_transfer_precheck": {
+      "warning": "Uses q_perf-installed old-modulus bounds only to locate required redesigns; not a q_quartic completeness or SIS certificate.",
+      "q_quartic_over_2": 463255047212960.5,
+      "rows": [
+        {
+          "gate": "p26/r1",
+          "old_bound_lhs": 462481290421503.7,
+          "passes_new_rhs": true
+        },
+        {
+          "gate": "p26/simple",
+          "old_bound_lhs": 524782523278880.44,
+          "passes_new_rhs": false
+        },
+        {
+          "gate": "p28/simple",
+          "old_bound_lhs": 555290410208102.5,
+          "passes_new_rhs": false
+        },
+        {
+          "gate": "p30/r1",
+          "old_bound_lhs": 543044077889662.0,
+          "passes_new_rhs": false
+        },
+        {
+          "gate": "p30/simple",
+          "old_bound_lhs": 520068198812393.44,
+          "passes_new_rhs": false
+        },
+        {
+          "gate": "exact-p26/simple",
+          "old_bound_lhs": 519276105607047.75,
+          "passes_new_rhs": false
+        },
+        {
+          "gate": "exact-p28/r3",
+          "old_bound_lhs": 472953850901292.25,
+          "passes_new_rhs": false
+        },
+        {
+          "gate": "exact-p28/simple",
+          "old_bound_lhs": 554758566778591.6,
+          "passes_new_rhs": false
+        },
+        {
+          "gate": "exact-p29/r2",
+          "old_bound_lhs": 458401227545903.3,
+          "passes_new_rhs": true
+        }
+      ]
+    }
+  }
+}
