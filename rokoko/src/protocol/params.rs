@@ -568,7 +568,7 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 16,
+    witness_decomposition_base_log: 17,
 
     next: Some(Box::new(AuxConfig::Sumcheck(P_5.clone()))),
 });
@@ -609,7 +609,7 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 16,
+    witness_decomposition_base_log: 17,
     next: Some(Box::new(AuxConfig::Simple(P_LAST.clone()))),
 });
 
