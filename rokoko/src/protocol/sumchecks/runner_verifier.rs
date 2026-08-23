@@ -285,9 +285,9 @@ pub fn sumcheck_verifier(
         .folded_norm_claim
         .constant_term_from_incomplete_ntt();
     assert_norm_bounded(
-        "decomposed folded-witness norm claim via inner-product",
+        "recomposed folded-witness norm claim via inner-product",
         (folded_norm_ct as f64).sqrt(),
-        config.folded_decomposed_norm_bound,
+        config.folded_recomposed_norm_bound,
     );
 
     match (
@@ -301,9 +301,9 @@ pub fn sumcheck_verifier(
         (_, Some(projection_norm_claim)) => {
             let projection_norm_ct = projection_norm_claim.constant_term_from_incomplete_ntt();
             assert_norm_bounded(
-                "decomposed projection norm claim via inner-product",
+                "recomposed projection norm claim via inner-product",
                 (projection_norm_ct as f64).sqrt(),
-                config.projection_decomposed_norm_bound,
+                config.projection_recomposed_norm_bound,
             );
         }
         (_, None) => panic!("projection round is missing its component-local norm claim"),

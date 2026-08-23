@@ -122,7 +122,7 @@ const NB_P_EN_29: [[f64; 2]; 8] = [
     [968769.3, 2324786.5], // provisional; the calibration run OOMs on 64 GB
 ];
 
-// Component-local decomposed-projection norm ledgers.  These are populated by
+// Component-local recomposed-projection norm ledgers.  These are populated by
 // the same deterministic completeness calibration as NB_P_*; infinity is used
 // only while refreshing the tables and is rejected by the hardness audit.
 const PB_P_26: [f64; 6] = [f64::INFINITY; 6];
@@ -176,7 +176,7 @@ fn assign_norm_bounds(config: &mut Config, bounds: &[[f64; 2]]) {
 fn assign_projection_norm_bounds(config: &mut Config, bounds: &[f64]) {
     fn rec(config: &mut Config, bounds: &[f64], i: &mut usize) {
         if let Config::Sumcheck(c) = config {
-            c.projection_decomposed_norm_bound = match c.projection_recursion {
+            c.projection_recomposed_norm_bound = match c.projection_recursion {
                 Projection::Skip => 0.0,
                 _ => bounds[*i] * NORM_MARGIN,
             };
@@ -198,7 +198,7 @@ fn assign_projection_norm_bounds(config: &mut Config, bounds: &[f64]) {
 fn assign_folded_norm_bounds(config: &mut Config, bounds: &[f64]) {
     fn rec(config: &mut Config, bounds: &[f64], i: &mut usize) {
         if let Config::Sumcheck(c) = config {
-            c.folded_decomposed_norm_bound = bounds[*i] * NORM_MARGIN;
+            c.folded_recomposed_norm_bound = bounds[*i] * NORM_MARGIN;
             *i += 1;
             if let Some(next) = c.next.as_deref_mut() {
                 rec(next, bounds, i);

@@ -260,12 +260,11 @@ pub struct SumcheckConfig {
 
     pub norm_bound: f64,
     pub most_inner_norm_bound: f64,
-    /// Verifier-enforced norm of the decomposed folded-witness component.
-    pub folded_decomposed_norm_bound: f64,
-    /// Verifier-enforced norm of the decomposed projection component in the
-    /// next packed witness.  Recomposition uses this component-local bound,
-    /// not the looser norm of the entire packed witness.
-    pub projection_decomposed_norm_bound: f64,
+    /// Verifier-enforced norm of the recomposed folded-witness component.
+    pub folded_recomposed_norm_bound: f64,
+    /// Verifier-enforced norm of the recomposed projection component in the
+    /// next packed witness, proved directly inside the sumcheck.
+    pub projection_recomposed_norm_bound: f64,
 
     pub next: Option<Box<Config>>, // for multiple rounds
 }

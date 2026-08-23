@@ -785,24 +785,57 @@ pub fn init_sumcheck(crs: &crs::CRS, config: &SumcheckConfig) -> SumcheckContext
         sum_of_selectors.clone(),
         output.clone(),
     ));
+    let folded_combiner = composition_sumcheck(
+        config.witness_decomposition_base_log as u64,
+        config.witness_decomposition_chunks,
+        total_vars,
+    );
     let folded_output = ElephantCell::new(ProductSumcheck::new(
         folded_witness_selector_sumcheck.clone(),
-        output.clone(),
+        ElephantCell::new(ProductSumcheck::new(
+            ElephantCell::new(ProductSumcheck::new(
+                combined_witness_sumcheck.clone(),
+                folded_combiner.clone(),
+            )),
+            ElephantCell::new(ProductSumcheck::new(
+                conjugated_combined_witness_sumcheck.clone(),
+                folded_combiner,
+            )),
+        )),
     ));
 
-    let projection_selector = match &config.projection_recursion {
-        Projection::Coarse(proj_config) => {
-            Some(sumcheck_from_prefix(&proj_config.prefix, total_vars))
-        }
-        Projection::Fine(proj_config) => Some(sumcheck_from_prefix(
+    let projection_parameters = match &config.projection_recursion {
+        Projection::Coarse(proj_config) => Some((
+            &proj_config.prefix,
+            proj_config.decomposition_base_log,
+            proj_config.decomposition_chunks,
+        )),
+        Projection::Fine(proj_config) => Some((
             &proj_config.recursion_constant_term.prefix,
-            total_vars,
+            proj_config.recursion_constant_term.decomposition_base_log,
+            proj_config.recursion_constant_term.decomposition_chunks,
         )),
         Projection::Skip => None,
     };
-    let projection_output = projection_selector
-        .as_ref()
-        .map(|selector| ElephantCell::new(ProductSumcheck::new(selector.clone(), output.clone())));
+    let (projection_selector, projection_output) =
+        projection_parameters.map_or((None, None), |(prefix, base_log, chunks)| {
+            let selector = sumcheck_from_prefix(prefix, total_vars);
+            let combiner = composition_sumcheck(base_log as u64, chunks, total_vars);
+            let norm = ElephantCell::new(ProductSumcheck::new(
+                selector.clone(),
+                ElephantCell::new(ProductSumcheck::new(
+                    ElephantCell::new(ProductSumcheck::new(
+                        combined_witness_sumcheck.clone(),
+                        combiner.clone(),
+                    )),
+                    ElephantCell::new(ProductSumcheck::new(
+                        conjugated_combined_witness_sumcheck.clone(),
+                        combiner,
+                    )),
+                )),
+            ));
+            (Some(selector), Some(norm))
+        });
 
     let norm_check_sumcheck = NormCheckSumcheckContext {
         conjugated_combined_witness: conjugated_combined_witness_sumcheck.clone(),
