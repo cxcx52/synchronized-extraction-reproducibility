@@ -423,13 +423,13 @@ fn p_plain_2(size: SizeConfig) -> AuxSumcheckConfig {
 fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
     let witness_height = size.pick(
         2usize.pow(10),
-        2usize.pow(10),
+        2usize.pow(11),
         2usize.pow(11),
         2usize.pow(11),
     );
     AuxSumcheckConfig {
         witness_height,
-        witness_width: 2usize.pow(5),
+        witness_width: size.pick(2usize.pow(5), 2usize.pow(4), 2usize.pow(5), 2usize.pow(5)),
         projection_ratio: size.pick(2usize.pow(5), 2usize.pow(5), 2usize.pow(8), 2usize.pow(8)),
         projection_height: 2usize.pow(8),
         basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
