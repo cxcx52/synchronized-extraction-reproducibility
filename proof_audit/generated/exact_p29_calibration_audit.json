@@ -1,0 +1,926 @@
+{
+  "status": "closed for capacity, empirical completeness calibration, centered uniqueness, and classical SIS certification",
+  "claim_boundary": "The norm calibration is empirical completeness evidence, not a malicious-prover theorem bound. The static SIS ledger uses verifier-enforced installed bounds. This does not by itself close the separate q_perf extraction ledger.",
+  "parameter_line": "repository exact-norm p29 (q_perf); separate from the q_exact exact-strong theorem line",
+  "geometry": [
+    {
+      "round": 0,
+      "kind": "sumcheck",
+      "height": 32768,
+      "width": 256
+    },
+    {
+      "round": 1,
+      "kind": "sumcheck",
+      "height": 65536,
+      "width": 16
+    },
+    {
+      "round": 2,
+      "kind": "sumcheck",
+      "height": 16384,
+      "width": 16
+    },
+    {
+      "round": 3,
+      "kind": "sumcheck",
+      "height": 4096,
+      "width": 16
+    },
+    {
+      "round": 4,
+      "kind": "sumcheck",
+      "height": 2048,
+      "width": 8
+    },
+    {
+      "round": 5,
+      "kind": "sumcheck",
+      "height": 1024,
+      "width": 8
+    },
+    {
+      "round": 6,
+      "kind": "sumcheck",
+      "height": 512,
+      "width": 8
+    },
+    {
+      "round": 7,
+      "kind": "simple",
+      "height": 2048,
+      "width": 2
+    }
+  ],
+  "calibration": {
+    "command": "cargo test calibrate_exact_norm_chain --lib --features p-29 --offline -- --ignored --nocapture",
+    "environment": {
+      "ROKOKO_CALIBRATE_NORMS": "1"
+    },
+    "remote_host": "gpushare",
+    "remote_task_root": "/hy-tmp/codex-exact-p29.0nCePo",
+    "remote_git_head": "16b05f32496f91442607f8cb21482b52990f505a",
+    "remote_dirty_files": [
+      ".cargo/config.toml",
+      "src/protocol/params.rs",
+      "src/protocol/parties/verifier.rs"
+    ],
+    "tau": 32,
+    "raw_NB": [
+      [
+        449095.42486424866,
+        4573.127048311691
+      ],
+      [
+        2541655.0585606615,
+        4586.439795745716
+      ],
+      [
+        31410872.07525025,
+        4567.333357660682
+      ],
+      [
+        6615918.423300351,
+        5264.489971886165
+      ],
+      [
+        31244341.336710155,
+        5297.151168746375
+      ],
+      [
+        28157775.739574444,
+        5272.187702247938
+      ],
+      [
+        6186013.78539969,
+        233106.2292388258
+      ],
+      [
+        35134549.26089995,
+        72395534.86889651
+      ]
+    ],
+    "raw_PB": [
+      27241906.0563594,
+      5092534.207931646,
+      28742421.257555842,
+      28177438.972140476,
+      29436314.23636514,
+      26968264.736921042,
+      22645685.164770506
+    ],
+    "raw_FB": [
+      14054360.108911611,
+      2535673.1294317096,
+      18808604.998299476,
+      23874083.661871046,
+      30857943.832717095,
+      21531674.06203266,
+      15447729.974848181
+    ],
+    "raw_NB_stdout_decimals": [
+      [
+        "449095.42486424866",
+        "4573.127048311691"
+      ],
+      [
+        "2541655.0585606615",
+        "4586.439795745716"
+      ],
+      [
+        "31410872.07525025",
+        "4567.333357660682"
+      ],
+      [
+        "6615918.423300351",
+        "5264.4899718861649"
+      ],
+      [
+        "31244341.336710155",
+        "5297.1511687463745"
+      ],
+      [
+        "28157775.739574444",
+        "5272.1877022479381"
+      ],
+      [
+        "6186013.78539969",
+        "233106.229238825795"
+      ],
+      [
+        "35134549.260899948",
+        "72395534.868896506"
+      ]
+    ],
+    "raw_PB_stdout_decimals": [
+      "27241906.0563594",
+      "5092534.207931646",
+      "28742421.257555842",
+      "28177438.972140476",
+      "29436314.23636514",
+      "26968264.736921042",
+      "22645685.164770506"
+    ],
+    "raw_FB_stdout_decimals": [
+      "14054360.108911611",
+      "2535673.1294317096",
+      "18808604.998299476",
+      "23874083.661871046",
+      "30857943.832717095",
+      "21531674.06203266",
+      "15447729.974848181"
+    ],
+    "installed_margin": 1.02,
+    "installed_NB": [
+      [
+        458077.33336153365,
+        4664.589589277925
+      ],
+      [
+        2592488.1597318747,
+        4678.16859166063
+      ],
+      [
+        32039089.516755253,
+        4658.680024813895
+      ],
+      [
+        6748236.791766359,
+        5369.779771323889
+      ],
+      [
+        31869228.16344436,
+        5403.0941921213025
+      ],
+      [
+        28720931.254365932,
+        5377.631456292897
+      ],
+      [
+        6309734.061107684,
+        237768.35382360232
+      ],
+      [
+        35837240.24611796,
+        73843445.56627445
+      ]
+    ],
+    "installed_PB": [
+      27786744.177486587,
+      5194384.89209028,
+      29317269.68270696,
+      28740987.751583286,
+      30025040.521092445,
+      27507630.031659465,
+      23098598.868065916
+    ],
+    "installed_FB": [
+      14335447.311089844,
+      2586386.592020344,
+      19184777.098265465,
+      24351565.335108466,
+      31475102.709371436,
+      21962307.54327331,
+      15756684.574345145
+    ],
+    "first_old_bound_exceedance": {
+      "round": 0,
+      "component": "norm",
+      "observed": 449095.42486424866,
+      "old_bound": 301286.0855424053,
+      "ratio": 1.4905946421513034
+    },
+    "all_old_bound_exceedances": [
+      {
+        "round": 0,
+        "component": "norm",
+        "observed": 449095.42486424866,
+        "old_bound": 301286.0855424053,
+        "ratio": 1.4905946421513034
+      },
+      {
+        "round": 0,
+        "component": "most_inner_norm",
+        "observed": 4573.127048311691,
+        "old_bound": 2814.1639180403117,
+        "ratio": 1.6250393301525456
+      },
+      {
+        "round": 1,
+        "component": "norm",
+        "observed": 2541655.0585606615,
+        "old_bound": 207653.9393205985,
+        "ratio": 12.239859580205607
+      },
+      {
+        "round": 1,
+        "component": "most_inner_norm",
+        "observed": 4586.439795745716,
+        "old_bound": 3232.4329468683495,
+        "ratio": 1.418881650797786
+      },
+      {
+        "round": 2,
+        "component": "norm",
+        "observed": 31410872.07525025,
+        "old_bound": 250271.0801520208,
+        "ratio": 125.50739804283626
+      },
+      {
+        "round": 2,
+        "component": "most_inner_norm",
+        "observed": 4567.333357660682,
+        "old_bound": 3224.2077380342603,
+        "ratio": 1.4165753973549176
+      },
+      {
+        "round": 3,
+        "component": "norm",
+        "observed": 6615918.423300351,
+        "old_bound": 60058.69332853321,
+        "ratio": 110.15754850192857
+      },
+      {
+        "round": 3,
+        "component": "most_inner_norm",
+        "observed": 5264.489971886165,
+        "old_bound": 3223.9274748666417,
+        "ratio": 1.6329430525120394
+      },
+      {
+        "round": 4,
+        "component": "norm",
+        "observed": 31244341.336710155,
+        "old_bound": 57745.171184818566,
+        "ratio": 541.0727978744726
+      },
+      {
+        "round": 4,
+        "component": "most_inner_norm",
+        "observed": 5297.151168746375,
+        "old_bound": 3231.2624417091224,
+        "ratio": 1.6393441462292786
+      },
+      {
+        "round": 5,
+        "component": "norm",
+        "observed": 28157775.739574444,
+        "old_bound": 36477.43270767284,
+        "ratio": 771.9231768646812
+      },
+      {
+        "round": 5,
+        "component": "most_inner_norm",
+        "observed": 5272.187702247938,
+        "old_bound": 3227.5469169014414,
+        "ratio": 1.6334968438845885
+      },
+      {
+        "round": 6,
+        "component": "norm",
+        "observed": 6186013.78539969,
+        "old_bound": 200847.7450554494,
+        "ratio": 30.799518230547598
+      },
+      {
+        "round": 6,
+        "component": "most_inner_norm",
+        "observed": 233106.2292388258,
+        "old_bound": 200736.78734982785,
+        "ratio": 1.1612531629919287
+      },
+      {
+        "round": 7,
+        "component": "norm",
+        "observed": 35134549.26089995,
+        "old_bound": 988144.6860000001,
+        "ratio": 35.55607772696148
+      },
+      {
+        "round": 7,
+        "component": "most_inner_norm",
+        "observed": 72395534.86889651,
+        "old_bound": 2371282.23,
+        "ratio": 30.530121616479416
+      }
+    ],
+    "test_passed": true,
+    "elapsed_seconds_test_harness": 2387.95,
+    "elapsed_seconds_peak_monitor": 2389.842,
+    "peak_rss": {
+      "aggregate_kib": 71525028,
+      "single_process_kib": 71486768,
+      "processes_at_aggregate_peak": 2,
+      "sample_interval_seconds": 0.1
+    },
+    "binary_boundary": "The completed remote binary contained the multi-block c0 reconstruction and constant-term fix. Commit 5bb6e5c later added fail-closed shape/canonical checks and tests without changing the honest transcript or calibrated norm values."
+  },
+  "capacity_regression": {
+    "passed": true,
+    "test": "fixed_weight_exact_norm_chains_fit_balanced_decomposition_windows"
+  },
+  "dimension_regressions": {
+    "chain_dimensions_passed": true,
+    "front_end_witness_size_passed": true
+  },
+  "centered_gates": [
+    {
+      "round": 0,
+      "gate_width": 16,
+      "lhs": 411788347725378.56,
+      "rhs": 562949953419968.5,
+      "holds": true,
+      "bound_provenance": "verifier-enforced installed projection bound"
+    },
+    {
+      "round": 1,
+      "gate_width": 16,
+      "lhs": 14390205017160.398,
+      "rhs": 562949953419968.5,
+      "holds": true,
+      "bound_provenance": "verifier-enforced installed projection bound"
+    },
+    {
+      "round": 2,
+      "gate_width": 16,
+      "lhs": 458401227545903.3,
+      "rhs": 562949953419968.5,
+      "holds": true,
+      "bound_provenance": "verifier-enforced installed projection bound"
+    },
+    {
+      "round": 3,
+      "gate_width": 8,
+      "lhs": 220278500516442.8,
+      "rhs": 562949953419968.5,
+      "holds": true,
+      "bound_provenance": "verifier-enforced installed projection bound"
+    },
+    {
+      "round": 4,
+      "gate_width": 8,
+      "lhs": 240400815544864.88,
+      "rhs": 562949953419968.5,
+      "holds": true,
+      "bound_provenance": "verifier-enforced installed projection bound"
+    },
+    {
+      "round": 5,
+      "gate_width": 8,
+      "lhs": 201778589322307.62,
+      "rhs": 562949953419968.5,
+      "holds": true,
+      "bound_provenance": "verifier-enforced installed projection bound"
+    },
+    {
+      "round": 6,
+      "gate_width": 2,
+      "lhs": 35569684644521.06,
+      "rhs": 562949953419968.5,
+      "holds": true,
+      "bound_provenance": "verifier-enforced installed projection bound"
+    },
+    {
+      "round": 7,
+      "gate_width": 2,
+      "lhs": 363523630206622.5,
+      "rhs": 562949953419968.5,
+      "holds": true,
+      "bound_provenance": "verifier-enforced installed projection bound"
+    }
+  ],
+  "sis_and_commitment_security": [
+    {
+      "scope": "exact-p29/r0/commitment recursive depth 0",
+      "m": 16384,
+      "rank": 4,
+      "certified_bound": 458077.33336153365,
+      "classical_sis_bits": 258.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r0/commitment recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 4664.589589277925,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r0/opening recursive depth 0",
+      "m": 2048,
+      "rank": 4,
+      "certified_bound": 458077.33336153365,
+      "classical_sis_bits": 258.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r0/opening recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 4664.589589277925,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r0/projection recursive depth 0",
+      "m": 524288,
+      "rank": 4,
+      "certified_bound": 458077.33336153365,
+      "classical_sis_bits": 258.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r0/projection recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 4664.589589277925,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r0/basic",
+      "m": 32768,
+      "rank": 7,
+      "certified_bound": 3669874511.639,
+      "classical_sis_bits": 148.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r1/commitment recursive depth 0",
+      "m": 1024,
+      "rank": 4,
+      "certified_bound": 2592488.1597318747,
+      "classical_sis_bits": 193.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r1/commitment recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 4678.16859166063,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r1/opening recursive depth 0",
+      "m": 256,
+      "rank": 4,
+      "certified_bound": 2592488.1597318747,
+      "classical_sis_bits": 193.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r1/opening recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 4678.16859166063,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r1/projection recursive depth 0",
+      "m": 32768,
+      "rank": 4,
+      "certified_bound": 2592488.1597318747,
+      "classical_sis_bits": 193.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r1/projection recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 4678.16859166063,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r1/basic",
+      "m": 65536,
+      "rank": 7,
+      "certified_bound": 662114967.5572081,
+      "classical_sis_bits": 177.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r2/commitment recursive depth 0",
+      "m": 1024,
+      "rank": 4,
+      "certified_bound": 32039089.516755253,
+      "classical_sis_bits": 135.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r2/commitment recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 4658.680024813895,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r2/opening recursive depth 0",
+      "m": 256,
+      "rank": 4,
+      "certified_bound": 32039089.516755253,
+      "classical_sis_bits": 135.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r2/opening recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 4658.680024813895,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r2/projection recursive depth 0",
+      "m": 16384,
+      "rank": 4,
+      "certified_bound": 32039089.516755253,
+      "classical_sis_bits": 135.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r2/projection recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 4658.680024813895,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r2/basic",
+      "m": 16384,
+      "rank": 7,
+      "certified_bound": 4911302937.155959,
+      "classical_sis_bits": 143.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r3/commitment recursive depth 0",
+      "m": 1024,
+      "rank": 4,
+      "certified_bound": 6748236.791766359,
+      "classical_sis_bits": 167.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r3/commitment recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5369.779771323889,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r3/opening recursive depth 0",
+      "m": 256,
+      "rank": 4,
+      "certified_bound": 6748236.791766359,
+      "classical_sis_bits": 167.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r3/opening recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5369.779771323889,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r3/projection-constant recursive depth 0",
+      "m": 512,
+      "rank": 4,
+      "certified_bound": 6748236.791766359,
+      "classical_sis_bits": 167.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r3/projection-constant recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5369.779771323889,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r3/projection-batched recursive depth 0",
+      "m": 256,
+      "rank": 4,
+      "certified_bound": 6748236.791766359,
+      "classical_sis_bits": 167.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r3/projection-batched recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5369.779771323889,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r3/basic",
+      "m": 4096,
+      "rank": 7,
+      "certified_bound": 6234000725.787767,
+      "classical_sis_bits": 140.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r4/commitment recursive depth 0",
+      "m": 512,
+      "rank": 4,
+      "certified_bound": 31869228.16344436,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r4/commitment recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5403.0941921213025,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r4/opening recursive depth 0",
+      "m": 128,
+      "rank": 4,
+      "certified_bound": 31869228.16344436,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r4/opening recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5403.0941921213025,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r4/projection-constant recursive depth 0",
+      "m": 1024,
+      "rank": 4,
+      "certified_bound": 31869228.16344436,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r4/projection-constant recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5403.0941921213025,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r4/projection-batched recursive depth 0",
+      "m": 128,
+      "rank": 4,
+      "certified_bound": 31869228.16344436,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r4/projection-batched recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5403.0941921213025,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r4/basic",
+      "m": 2048,
+      "rank": 7,
+      "certified_bound": 8057626293.599088,
+      "classical_sis_bits": 137.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r5/commitment recursive depth 0",
+      "m": 512,
+      "rank": 4,
+      "certified_bound": 28720931.254365932,
+      "classical_sis_bits": 137.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r5/commitment recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5377.631456292897,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r5/opening recursive depth 0",
+      "m": 128,
+      "rank": 4,
+      "certified_bound": 28720931.254365932,
+      "classical_sis_bits": 137.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r5/opening recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5377.631456292897,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r5/projection-constant recursive depth 0",
+      "m": 512,
+      "rank": 4,
+      "certified_bound": 28720931.254365932,
+      "classical_sis_bits": 137.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r5/projection-constant recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5377.631456292897,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r5/projection-batched recursive depth 0",
+      "m": 128,
+      "rank": 4,
+      "certified_bound": 28720931.254365932,
+      "classical_sis_bits": 137.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r5/projection-batched recursive depth 1",
+      "m": 32,
+      "rank": 1,
+      "certified_bound": 5377.631456292897,
+      "classical_sis_bits": 136.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r5/basic",
+      "m": 1024,
+      "rank": 7,
+      "certified_bound": 5622350731.077968,
+      "classical_sis_bits": 141.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r6/commitment recursive depth 0",
+      "m": 512,
+      "rank": 2,
+      "certified_bound": 237768.35382360232,
+      "classical_sis_bits": 131.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r6/opening recursive depth 0",
+      "m": 128,
+      "rank": 2,
+      "certified_bound": 237768.35382360232,
+      "classical_sis_bits": 131.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r6/projection-constant recursive depth 0",
+      "m": 512,
+      "rank": 2,
+      "certified_bound": 237768.35382360232,
+      "classical_sis_bits": 131.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r6/projection-batched recursive depth 0",
+      "m": 64,
+      "rank": 2,
+      "certified_bound": 237768.35382360232,
+      "classical_sis_bits": 131.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r6/basic",
+      "m": 512,
+      "rank": 7,
+      "certified_bound": 4033711251.032357,
+      "classical_sis_bits": 146.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    },
+    {
+      "scope": "exact-p29/r7/simple-basic",
+      "m": 2048,
+      "rank": 7,
+      "certified_bound": 9174333503.006197,
+      "classical_sis_bits": 135.0,
+      "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port",
+      "bound_provenance": "verifier-enforced installed bound"
+    }
+  ],
+  "minimum_classical_sis_bits": 131.0,
+  "publication_benchmark": {
+    "calibration_timing_is_not_a_benchmark": true,
+    "rerun_needed": true,
+    "reason": "Publication benchmarks are deferred until exact-p29, p26, and the q_perf extraction ledger are all technically closed, as requested."
+  }
+}

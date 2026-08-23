@@ -13,8 +13,8 @@ The paper's separate exact-strong theorem line uses
 
 No challenge-algebra property or numerical certificate is transferred between
 these two moduli. In particular, the repository configurations named
-`exact-p26` and `exact-p28` are exact-*norm* protocol chains over `q_perf`; they
-are not executions of the paper's `q_exact` theorem line.
+`exact-p26`, `exact-p28`, and `exact-p29` are exact-*norm* protocol chains over
+`q_perf`; they are not executions of the paper's `q_exact` theorem line.
 
 ## Outcome
 
@@ -25,14 +25,14 @@ are not executions of the paper's `q_exact` theorem line.
 | performance p26 | pass | pass, tau=32/tau=34 | **fail at r1 and r2** | all estimator entries pass, but rank cannot repair the gates | blocked |
 | exact-norm p26 | pass | pass, tau=32/tau=34 | pass | pass | q_perf CRT obstruction still applies to a whole-ring single-fork claim |
 | exact-norm p28 | pass | pass, tau=32/tau=34 | pass | pass | q_perf CRT obstruction still applies to a whole-ring single-fork claim |
-| exact-norm p29 | candidate decomposition window passes | not closed; the full run is not available | not certifiable with `PB/FB = infinity` | not certifiable | blocked; existing run is documented as OOM even on 64 GiB |
+| exact-norm p29 | pass | pass, tau=32 full-chain run on 127 GiB host | pass | pass (minimum 131 bits) | q_perf CRT obstruction still applies to a whole-ring single-fork claim |
 | exact-norm p30 | uncalibrated | not closed | not closed | not closed | not closed; configured as an OOM-only line |
 
-Thus p28, p30, exact-norm p26, and exact-norm p28 close the requested three
-layers of (1) capacity, (2) empirical completeness calibration, and (3)
-centered/SIS certification. This is not a full 128-bit extraction theorem for
-`q_perf`: the fixed-weight unit-difference ledger has a separate rigorous
-roughly 100-bit obstruction below.
+Thus p28, p30, exact-norm p26, exact-norm p28, and exact-norm p29 close the
+requested three layers of (1) capacity, (2) empirical completeness calibration,
+and (3) centered/SIS certification. This is not a full 128-bit extraction
+theorem for `q_perf`: the fixed-weight unit-difference ledger has a separate
+rigorous roughly 100-bit obstruction below.
 
 ## Final registered geometry
 
@@ -47,13 +47,14 @@ is shown as `height x width` in execution order.
 | performance p30 | `32768x512 -> 16384x8 -> 2048x32 -> 512x16 -> 512x8 -> 512x8 -> 1024x4` |
 | exact-norm p26 | `8192x128 -> 16384x8 -> 8192x8 -> 1024x32 -> 512x16 -> 512x8 -> 512x8 -> 1024x4` |
 | exact-norm p28 | `16384x256 -> 32768x16 -> 8192x16 -> 2048x16 -> 512x16 -> 512x8 -> 512x8 -> 1024x4` |
-| exact-norm p29, unclosed | `32768x256 -> 65536x16 -> 16384x16 -> 2048x32 -> 512x16 -> 512x8 -> 512x8 -> 1024x4` |
+| exact-norm p29 | `32768x256 -> 65536x16 -> 16384x16 -> 4096x16 -> 2048x8 -> 1024x8 -> 512x8 -> 2048x2` |
 
 The full-capacity generic projection source is two 25-bit centered digits.
 The final sumcheck projection uses eight 7-bit digits for its constant term
-and four 13-bit digits for its batched part. The final simple layer is
-`1024x4` with projection ratio `2^9`. These are structural parameters; norm
-thresholds remain the empirical maxima plus the registered 2% margin.
+and four 13-bit digits for its batched part. The ordinary final simple layer is
+`1024x4`; exact-norm p29 uses `2048x2`. Both use projection ratio `2^9`.
+These are structural parameters; norm thresholds remain the empirical maxima
+plus the registered 2% margin.
 
 ## Provenance of every norm use
 
@@ -116,6 +117,14 @@ The performance roots have `Projection::Skip` and therefore no root gate.
 | exact-norm p28 | r5 | 8 | 291620809443330.0 | pass |
 | exact-norm p28 | r6 | 4 | 125058850220548.53 | pass |
 | exact-norm p28 | r7 simple | 4 | 554758566778591.6 | pass |
+| exact-norm p29 | r0 | 16 | 411788347725378.56 | pass |
+| exact-norm p29 | r1 | 16 | 14390205017160.398 | pass |
+| exact-norm p29 | r2 | 16 | 458401227545903.3 | pass |
+| exact-norm p29 | r3 | 8 | 220278500516442.8 | pass |
+| exact-norm p29 | r4 | 8 | 240400815544864.88 | pass |
+| exact-norm p29 | r5 | 8 | 201778589322307.63 | pass |
+| exact-norm p29 | r6 | 2 | 35569684644521.06 | pass |
+| exact-norm p29 | r7 simple | 2 | 363523630206622.5 | pass |
 
 The p28 simple gate is intentionally tight but passing. The combined boundary
 stream raised the p28 r2 empirical `NB`, `FB`, and `PB` maxima; after that
@@ -136,6 +145,7 @@ round has no recursive commitment at that depth.
 | p30 | `[155,136,137,136,142,137,136]` | `[144,136,139,137,140,131,-]` | `[149,141,136,136,136,-,-]` |
 | exact-norm p26 | `[164,198,162,135,140,155,140,136]` | `[312,226,153,139,136,141,131,-]` | `[141,141,141,136,136,136,-,-]` |
 | exact-norm p28 | `[152,183,147,136,136,146,136,136]` | `[275,202,141,135,145,134,131,-]` | `[141,141,141,136,136,136,-,-]` |
+| exact-norm p29 | `[148,177,143,140,137,141,146,135]` | `[258,193,135,167,136,137,131,-]` | `[141,141,141,136,136,136,-,-]` |
 
 All displayed SIS estimates are at least 128 bits. This does not rescue p26:
 its r1/r2 failure is a centered-modulus failure, which is independent of rank.
@@ -199,14 +209,15 @@ theorem line is unaffected.
 - Rustdoc suite: pass (the two displayed challenge formulas are explicitly
   marked as text rather than accidental Rust doctests).
 - Formal-threshold combined boundary regression: passed (`311.23 s`).
-- Static p28/p30/exact-norm-p26/exact-norm-p28 centered/SIS certification:
-  passed.
+- Static p28/p30/exact-norm-p26/exact-norm-p28/exact-norm-p29 centered/SIS
+  certification: passed.
 - Explicit non-asserting p26 diagnostic: traversed all rounds and recorded the
   two centered failures above; every estimator entry was at least 131 bits.
 - Parameter/capacity tests under default, `challenge-weight-34`, `p-26`,
   `p-29`, and `p-30`: 7 passed for each feature set.
 - Long full-chain empirical calibration: p26, p28, p30, exact-norm p26, and
-  exact-norm p28 passed under both tau=32 and tau=34.
+  exact-norm p28 passed under both tau=32 and tau=34. Exact-norm p29 completed
+  its tau=32 run on the 127 GiB host with every PB/FB/NB entry finite.
 - `fixed_weight_crt_obstruction.py`: passed and regenerated the exact integer
   ledger.
 - `fixed_weight_hardness_audit.py`: passed and regenerated the current p28
@@ -214,10 +225,12 @@ theorem line is unaffected.
 - `integer_ipa_parameter_audit.py`: passed its r=2..32 and cubic-denominator
   checks.
 
-Exact-norm p29 was not rerun on this 15.6 GiB machine. Its source records that
-the same full-chain calibration OOMs on 64 GiB, and its projection/folded
-tables remain infinite. It is deliberately excluded from the passing static
-certificate rather than being assigned extrapolated bounds.
+Exact-norm p29 completed remotely in 2387.95 s. Peak RSS was 71,525,028 KiB
+aggregate and 71,486,768 KiB for the largest process. Its raw values, all
+provisional-bound exceedances, centered gates, and 54 estimator entries are in
+`proof_audit/generated/exact_p29_calibration_audit.json`; the minimum estimator
+output is 131 classical bits. The timing is a calibration diagnostic, not an
+optimized benchmark.
 
 ## Benchmark decision
 
@@ -226,14 +239,17 @@ ranks, recursive layout, sumcheck relations, projection widths, and norm
 checks changed. The long calibration timings are correctness diagnostics and
 must not be reported as optimized benchmark timings. Exact-norm p26/p28 also
 need reruns if their performance is reported. p26 should be benchmarked only
-after its centered-gate redesign and recalibration. Exact-norm p29 needs a
-streaming/low-memory calibration implementation or a sufficiently large
-machine before either correctness closure or benchmarking.
+after its centered-gate redesign and recalibration. Exact-norm p29 is now
+correctness-closed but should be benchmarked only with the other final lines
+after the remaining technical work is complete.
 
 Reproduction artifacts:
 
 - `proof_audit/generated/fixed_weight_hardness_audit.json`
 - `proof_audit/generated/fixed_weight_crt_obstruction.json`
+- `proof_audit/generated/exact_p29_calibration_audit.json`
 - `proof_audit/fixed_weight_hardness_audit.py`
 - `proof_audit/fixed_weight_crt_obstruction.py`
+- `proof_audit/exact_p29_calibration_audit.py`
+- `proof_audit/exact_p29_calibration_audit.md`
 - Rust static certifier in `rokoko/src/protocol/parties/debug_hardness.rs`

@@ -669,7 +669,7 @@ mod tests {
         protocol::{
             commitment::RecursionConfig,
             config::{Config, Projection},
-            params::{P_EN_MEDIUM, P_EN_SMALL, P_LARGE, P_MEDIUM, P_SMALL},
+            params::{P_EN_MEDIUM, P_EN_NARROW_LARGE, P_EN_SMALL, P_LARGE, P_MEDIUM, P_SMALL},
         },
     };
 
@@ -898,6 +898,7 @@ mod tests {
         certify_registered_config("p30", &P_LARGE);
         certify_registered_config("exact-p26", &P_EN_SMALL);
         certify_registered_config("exact-p28", &P_EN_MEDIUM);
+        certify_registered_config("exact-p29", &P_EN_NARROW_LARGE);
     }
 
     /// The small performance chain is intentionally not part of the passing
