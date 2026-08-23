@@ -58,6 +58,8 @@ pub fn compiled_size() -> SizeConfig {
 }
 
 pub const NORM_MARGIN: f64 = 1.02;
+const CERTIFIED_BASIC_COMMITMENT_RANK: usize = 7;
+const CERTIFIED_OUTER_RECURSION_RANK: usize = 4;
 
 const NB_P_26: [[f64; 2]; 7] = [
     [46889.51181234456, 2242.093664412796],
@@ -239,24 +241,24 @@ pub fn p_exact_norm_root_aux(size: SizeConfig, nof_openings: usize) -> AuxSumche
         witness_width: size.pick(2usize.pow(7), 2usize.pow(8), 2usize.pow(8), 2usize.pow(9)),
         projection_ratio: 2usize.pow(5),  // no-op
         projection_height: 2usize.pow(8), // no-op
-        basic_commitment_rank: 6,
+        basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
         nof_openings,
         commitment_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         opening_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         projection_recursion: AuxProjection::Coarse(AuxRecursionConfig {
             decomposition_base_log: 8,
             decomposition_chunks: 2,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         }),
 
@@ -278,24 +280,24 @@ pub fn p_int(size: SizeConfig) -> AuxSumcheckConfig {
         witness_width: size.pick(2usize.pow(3), 2usize.pow(4), 2usize.pow(4), 2usize.pow(5)),
         projection_ratio: 2usize.pow(6),
         projection_height: 2usize.pow(8),
-        basic_commitment_rank: size.pick(5, 5, 6, 6),
+        basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
         nof_openings: 2,
         commitment_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: size.pick(2, 2, 4, 4),
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         opening_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         projection_recursion: AuxProjection::Coarse(AuxRecursionConfig {
             decomposition_base_log: 9,
             decomposition_chunks: 2,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         }),
 
@@ -321,18 +323,18 @@ pub fn p_root_aux(size: SizeConfig, nof_openings: usize) -> AuxSumcheckConfig {
         witness_width: size.pick(2usize.pow(7), 2usize.pow(8), 2usize.pow(8), 2usize.pow(9)),
         projection_ratio: 1,              // no-op
         projection_height: 2usize.pow(8), // no-op,
-        basic_commitment_rank: 6,
+        basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
         nof_openings,
         commitment_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         opening_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         projection_recursion: AuxProjection::Skip,
@@ -374,18 +376,18 @@ fn p_1_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig
         witness_width,
         projection_ratio: 2usize.pow(5),
         projection_height: 2usize.pow(8),
-        basic_commitment_rank: size.pick(5, 5, 6, 6),
+        basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
         nof_openings: 2,
         commitment_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: size.pick(2, 2, 4, 4),
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         opening_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         projection_recursion: AuxProjection::Coarse(AuxRecursionConfig {
@@ -395,7 +397,7 @@ fn p_1_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig
             // radix-operator loss.
             decomposition_base_log: 25,
             decomposition_chunks: 2,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         }),
 
@@ -430,18 +432,18 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
         witness_width: 2usize.pow(5),
         projection_ratio: size.pick(2usize.pow(5), 2usize.pow(5), 2usize.pow(8), 2usize.pow(8)),
         projection_height: 2usize.pow(8),
-        basic_commitment_rank: 5,
+        basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
         nof_openings: 2,
         commitment_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         opening_recursion: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         projection_recursion: AuxProjection::Fine {
@@ -449,13 +451,13 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
             recursion_constant_term: AuxRecursionConfig {
                 decomposition_base_log: 25,
                 decomposition_chunks: 2,
-                rank: 2,
+                rank: CERTIFIED_OUTER_RECURSION_RANK,
                 next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
             },
             recursion_batched_projection: AuxRecursionConfig {
                 decomposition_base_log: 7,
                 decomposition_chunks: 8,
-                rank: 2,
+                rank: CERTIFIED_OUTER_RECURSION_RANK,
                 next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
             },
         },
@@ -586,18 +588,18 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     witness_width: 2usize.pow(5),
     projection_ratio: 2usize.pow(5),
     projection_height: 2usize.pow(8),
-    basic_commitment_rank: 4,
+    basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
     nof_openings: 2,
     commitment_recursion: AuxRecursionConfig {
         decomposition_base_log: 7,
         decomposition_chunks: 8,
-        rank: 2,
+        rank: CERTIFIED_OUTER_RECURSION_RANK,
         next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
     },
     opening_recursion: AuxRecursionConfig {
         decomposition_base_log: 7,
         decomposition_chunks: 8,
-        rank: 2,
+        rank: CERTIFIED_OUTER_RECURSION_RANK,
         next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
     },
     projection_recursion: AuxProjection::Fine {
@@ -605,13 +607,13 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
         recursion_constant_term: AuxRecursionConfig {
             decomposition_base_log: 25,
             decomposition_chunks: 2,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         recursion_batched_projection: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
     },
@@ -623,22 +625,22 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
 });
 
 pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig {
-    witness_height: 2usize.pow(9),
+    witness_height: 2usize.pow(10),
     witness_width: 2usize.pow(3),
     projection_ratio: 2usize.pow(5),
     projection_height: 2usize.pow(8),
-    basic_commitment_rank: 4,
+    basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
     nof_openings: 2,
     commitment_recursion: AuxRecursionConfig {
         decomposition_base_log: 7,
         decomposition_chunks: 8,
-        rank: 2,
+        rank: CERTIFIED_OUTER_RECURSION_RANK,
         next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
     },
     opening_recursion: AuxRecursionConfig {
         decomposition_base_log: 7,
         decomposition_chunks: 8,
-        rank: 2,
+        rank: CERTIFIED_OUTER_RECURSION_RANK,
         next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
     },
     projection_recursion: AuxProjection::Fine {
@@ -646,13 +648,13 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
         recursion_constant_term: AuxRecursionConfig {
             decomposition_base_log: 25,
             decomposition_chunks: 2,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         recursion_batched_projection: AuxRecursionConfig {
             decomposition_base_log: 7,
             decomposition_chunks: 8,
-            rank: 2,
+            rank: CERTIFIED_OUTER_RECURSION_RANK,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
     },
@@ -664,11 +666,11 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
 });
 
 pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig {
-    witness_height: 2usize.pow(8),
+    witness_height: 2usize.pow(9),
     witness_width: 2usize.pow(3),
     projection_ratio: 2usize.pow(6),
     projection_height: 2usize.pow(8),
-    basic_commitment_rank: 3,
+    basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
     nof_openings: 2,
     commitment_recursion: AuxRecursionConfig {
         decomposition_base_log: 7,
@@ -704,11 +706,11 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
 });
 
 pub static P_LAST: LazyLock<SimpleConfig> = LazyLock::new(|| SimpleConfig {
-    witness_height: 2usize.pow(9),
+    witness_height: 2usize.pow(10),
     witness_width: 2usize.pow(2),
-    projection_ratio: 2usize.pow(8),
+    projection_ratio: 2usize.pow(9),
     projection_height: 2usize.pow(8),
-    basic_commitment_rank: 4,
+    basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
     projection_nof_batches: 2,
     witness_norm_bound: f64::INFINITY,
     projection_norm_bound: f64::INFINITY,
