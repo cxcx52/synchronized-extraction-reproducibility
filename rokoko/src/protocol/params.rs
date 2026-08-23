@@ -389,7 +389,11 @@ fn p_1_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         projection_recursion: AuxProjection::Coarse(AuxRecursionConfig {
-            decomposition_base_log: 11,
+            // Two 25-bit balanced digits cover every centered F_q element.
+            // The recomposed projection norm is proved directly, so this
+            // full-capacity encoding does not enter the SIS radius as a
+            // radix-operator loss.
+            decomposition_base_log: 25,
             decomposition_chunks: 2,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -443,7 +447,7 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
         projection_recursion: AuxProjection::Fine {
             nof_batches: 2,
             recursion_constant_term: AuxRecursionConfig {
-                decomposition_base_log: 11,
+                decomposition_base_log: 25,
                 decomposition_chunks: 2,
                 rank: 2,
                 next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -457,7 +461,7 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
         },
 
         witness_decomposition_chunks: 2,
-        witness_decomposition_base_log: 16,
+        witness_decomposition_base_log: 17,
 
         next: Some(Box::new(AuxConfig::Sumcheck(P_3.clone()))),
     }
@@ -599,7 +603,7 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 11,
+            decomposition_base_log: 25,
             decomposition_chunks: 2,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -613,7 +617,7 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 15,
+    witness_decomposition_base_log: 17,
 
     next: Some(Box::new(AuxConfig::Sumcheck(P_4.clone()))),
 });
@@ -640,7 +644,7 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 11,
+            decomposition_base_log: 25,
             decomposition_chunks: 2,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -654,7 +658,7 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 14,
+    witness_decomposition_base_log: 16,
 
     next: Some(Box::new(AuxConfig::Sumcheck(P_5.clone()))),
 });
@@ -681,7 +685,7 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 11,
+            decomposition_base_log: 25,
             decomposition_chunks: 2,
             rank: 2,
             next: None,
@@ -695,7 +699,7 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 14,
+    witness_decomposition_base_log: 16,
     next: Some(Box::new(AuxConfig::Simple(P_LAST.clone()))),
 });
 
@@ -830,6 +834,31 @@ mod tests {
         }
     }
 
+    fn assert_projection_source_covers_centered_field(config: &Config) {
+        let mut current = config;
+        while let Config::Sumcheck(sumcheck) = current {
+            let source = match &sumcheck.projection_recursion {
+                Projection::Coarse(recursion) => Some(recursion),
+                Projection::Fine(fine) => Some(&fine.recursion_constant_term),
+                Projection::Skip => None,
+            };
+            if let Some(source) = source {
+                assert_eq!(
+                    symmetric_decomposition_capacity(
+                        source.decomposition_base_log,
+                        source.decomposition_chunks,
+                    ),
+                    (MOD_Q / 2) as u128,
+                    "every generic projection constant-term source must encode the full centered field"
+                );
+            }
+            let Some(next) = sumcheck.next.as_deref() else {
+                break;
+            };
+            current = next;
+        }
+    }
+
     fn assert_fixed_weight_decomposition_capacity(config: &Config, mut input_bound: u128) {
         let mut current = config;
         let mut input_is_coefficient_bound = true;
@@ -960,6 +989,16 @@ mod tests {
             super::assign_norm_bounds(&mut config, bounds);
             assert_fixed_weight_decomposition_capacity(&config, initial_digit_bound);
         }
+    }
+
+    #[test]
+    fn generic_projection_sources_cover_the_centered_field() {
+        assert_projection_source_covers_centered_field(
+            &super::p_plain_1(super::SizeConfig::Medium).generate_config(),
+        );
+        assert_projection_source_covers_centered_field(
+            &super::p_1(super::SizeConfig::Medium).generate_config(),
+        );
     }
 
     #[test]
