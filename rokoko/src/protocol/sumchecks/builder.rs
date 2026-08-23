@@ -799,7 +799,7 @@ pub fn init_sumcheck(crs: &crs::CRS, config: &SumcheckConfig) -> SumcheckContext
             )),
             ElephantCell::new(ProductSumcheck::new(
                 conjugated_combined_witness_sumcheck.clone(),
-                folded_combiner,
+                folded_combiner.clone(),
             )),
         )),
     ));
@@ -817,8 +817,8 @@ pub fn init_sumcheck(crs: &crs::CRS, config: &SumcheckConfig) -> SumcheckContext
         )),
         Projection::Skip => None,
     };
-    let (projection_selector, projection_output) =
-        projection_parameters.map_or((None, None), |(prefix, base_log, chunks)| {
+    let (projection_selector, projection_output, projection_combiner) = projection_parameters
+        .map_or((None, None, None), |(prefix, base_log, chunks)| {
             let selector = sumcheck_from_prefix(prefix, total_vars);
             let combiner = composition_sumcheck(base_log as u64, chunks, total_vars);
             let norm = ElephantCell::new(ProductSumcheck::new(
@@ -830,11 +830,11 @@ pub fn init_sumcheck(crs: &crs::CRS, config: &SumcheckConfig) -> SumcheckContext
                     )),
                     ElephantCell::new(ProductSumcheck::new(
                         conjugated_combined_witness_sumcheck.clone(),
-                        combiner,
+                        combiner.clone(),
                     )),
                 )),
             ));
-            (Some(selector), Some(norm))
+            (Some(selector), Some(norm), Some(combiner))
         });
 
     let norm_check_sumcheck = NormCheckSumcheckContext {
@@ -843,8 +843,10 @@ pub fn init_sumcheck(crs: &crs::CRS, config: &SumcheckConfig) -> SumcheckContext
         selectors: most_inner_commitments_selectors,
         output_2,
         folded_output,
+        folded_combiner,
         projection_selector,
         projection_output,
+        projection_combiner,
     };
 
     // ComVerify sumchecks: Three separate recursive commitment trees
