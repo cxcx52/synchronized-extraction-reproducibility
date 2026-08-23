@@ -657,8 +657,9 @@ pub fn check_simple_round(
 #[cfg(test)]
 mod tests {
     use super::{
-        certified_recomposition_bound, enforce_estimated_security, minimum_rank_for_bound,
-        recomposition_l2_operator_norm, EXTRACTION_SLACK, JL_ALPHA_RP, SPECTRAL_OP_NORM_SAFE_BOUND,
+        certified_recomposition_bound, enforce_estimated_security, exhaustive_audit_enabled,
+        minimum_rank_for_bound, recomposition_l2_operator_norm, EXTRACTION_SLACK, JL_ALPHA_RP,
+        SPECTRAL_OP_NORM_SAFE_BOUND,
     };
     use crate::{
         common::{
@@ -668,7 +669,7 @@ mod tests {
         protocol::{
             commitment::RecursionConfig,
             config::{Config, Projection},
-            params::{P_EN_MEDIUM, P_EN_SMALL, P_LARGE, P_MEDIUM},
+            params::{P_EN_MEDIUM, P_EN_SMALL, P_LARGE, P_MEDIUM, P_SMALL},
         },
     };
 
@@ -795,7 +796,9 @@ mod tests {
                             "STATIC_CERT gate name={name:?} round={round} width={width} lhs={lhs} rhs={rhs} holds={}",
                             lhs < rhs
                         );
-                        assert!(lhs < rhs, "{name} round {round} fails centered uniqueness");
+                        if !exhaustive_audit_enabled() {
+                            assert!(lhs < rhs, "{name} round {round} fails centered uniqueness");
+                        }
                     }
                     certify_sis(
                         &format!("{name}/r{round}/basic"),
@@ -818,10 +821,16 @@ mod tests {
                     let argued = intermediate.projection_norm_bound / JL_ALPHA_RP;
                     let lhs = argued.powi(2);
                     let rhs = MOD_Q as f64 / 2.0;
-                    assert!(
-                        lhs < rhs,
-                        "{name} intermediate round fails centered uniqueness"
+                    eprintln!(
+                        "STATIC_CERT gate name={name:?} round={round} width=1 lhs={lhs} rhs={rhs} holds={}",
+                        lhs < rhs
                     );
+                    if !exhaustive_audit_enabled() {
+                        assert!(
+                            lhs < rhs,
+                            "{name} intermediate round fails centered uniqueness"
+                        );
+                    }
                     certify_sis(
                         &format!("{name}/r{round}/intermediate-basic"),
                         intermediate.witness_height,
@@ -844,7 +853,9 @@ mod tests {
                         simple.witness_width,
                         lhs < rhs
                     );
-                    assert!(lhs < rhs, "{name} simple round fails centered uniqueness");
+                    if !exhaustive_audit_enabled() {
+                        assert!(lhs < rhs, "{name} simple round fails centered uniqueness");
+                    }
                     certify_sis(
                         &format!("{name}/r{round}/simple-basic"),
                         simple.witness_height,
@@ -887,6 +898,19 @@ mod tests {
         certify_registered_config("p30", &P_LARGE);
         certify_registered_config("exact-p26", &P_EN_SMALL);
         certify_registered_config("exact-p28", &P_EN_MEDIUM);
+    }
+
+    /// The small performance chain is intentionally not part of the passing
+    /// certification set.  This audit prints every gate and SIS estimate so a
+    /// centered-modulus obstruction cannot be hidden by the first assertion.
+    #[test]
+    #[ignore = "p26 has a known centered-uniqueness obstruction"]
+    fn audit_blocked_p26_bounds() {
+        assert!(
+            exhaustive_audit_enabled(),
+            "set ROKOKO_AUDIT_HARDNESS=1 for non-asserting diagnostics"
+        );
+        certify_registered_config("p26-blocked", &P_SMALL);
     }
 
     #[test]
