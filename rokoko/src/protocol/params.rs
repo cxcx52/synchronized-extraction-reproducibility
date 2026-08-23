@@ -584,8 +584,8 @@ pub static P_TWO_EVALS: LazyLock<Config> = LazyLock::new(|| match compiled_size(
 });
 
 pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig {
-    witness_height: 2usize.pow(8),
-    witness_width: 2usize.pow(5),
+    witness_height: 2usize.pow(9),
+    witness_width: 2usize.pow(4),
     projection_ratio: 2usize.pow(5),
     projection_height: 2usize.pow(8),
     basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
@@ -625,7 +625,7 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
 });
 
 pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig {
-    witness_height: 2usize.pow(10),
+    witness_height: 2usize.pow(9),
     witness_width: 2usize.pow(3),
     projection_ratio: 2usize.pow(5),
     projection_height: 2usize.pow(8),
