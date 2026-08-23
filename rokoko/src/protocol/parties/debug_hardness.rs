@@ -43,8 +43,7 @@ fn exhaustive_audit_enabled() -> bool {
     false
 }
 
-#[cfg(test)]
-fn minimum_rank_for_observed_bound(
+fn minimum_rank_for_bound(
     witness_height: usize,
     length_bound: f64,
     target_bits: f64,
@@ -67,14 +66,17 @@ fn minimum_rank_for_observed_bound(
 
 fn enforce_estimated_security(
     scope: &str,
+    witness_height: usize,
     rank: usize,
     length_bound: f64,
     result: &Result<EstimatorResult, std::io::Error>,
 ) {
     if exhaustive_audit_enabled() {
         eprintln!(
-            "HARDNESS_AUDIT security scope={scope:?} rank={rank} \
-             length_bound={length_bound} target_bits={TARGET_SECURITY_BITS} result={result:?}"
+            "HARDNESS_AUDIT security scope={scope:?} m={witness_height} rank={rank} \
+             length_bound={length_bound} target_bits={TARGET_SECURITY_BITS} result={result:?} \
+             minimum_rank_ge_128={:?}",
+            minimum_rank_for_bound(witness_height, length_bound, TARGET_SECURITY_BITS, 64)
         );
         return;
     }
@@ -166,6 +168,7 @@ fn check_recursive_commitment(
     );
     enforce_estimated_security(
         &format!("recursive commitment {name} depth {depth}"),
+        rc.committed_data.len(),
         config.rank,
         current_extracted_norm,
         &hardness,
@@ -431,6 +434,7 @@ pub fn check_sumcheck_round(
     );
     enforce_estimated_security(
         "sumcheck basic commitment",
+        config.witness_height,
         config.basic_commitment_rank,
         worse_bound,
         &basic_commitment_security,
@@ -545,6 +549,7 @@ pub fn check_intermediate_round(
     );
     enforce_estimated_security(
         "intermediate basic commitment",
+        config.witness_height,
         config.basic_commitment_rank,
         worse_bound,
         &basic_commitment_security,
@@ -631,6 +636,7 @@ pub fn check_simple_round(
     );
     enforce_estimated_security(
         "simple basic commitment",
+        config.witness_height,
         config.basic_commitment_rank,
         worse_bound,
         &basic_commitment_security,
@@ -651,7 +657,7 @@ pub fn check_simple_round(
 #[cfg(test)]
 mod tests {
     use super::{
-        enforce_estimated_security, minimum_rank_for_observed_bound, recomposition_l2_operator_norm,
+        enforce_estimated_security, minimum_rank_for_bound, recomposition_l2_operator_norm,
     };
     use crate::common::estimator::EstimatorResult;
 
@@ -669,13 +675,25 @@ mod tests {
 
     #[test]
     fn target_security_is_accepted() {
-        enforce_estimated_security("unit test", 1, 1.0, &Ok(EstimatorResult { secpar: 128.0 }));
+        enforce_estimated_security(
+            "unit test",
+            1,
+            1,
+            1.0,
+            &Ok(EstimatorResult { secpar: 128.0 }),
+        );
     }
 
     #[test]
     #[should_panic(expected = "SIS estimate below target")]
     fn sub_target_security_is_rejected() {
-        enforce_estimated_security("unit test", 1, 1.0, &Ok(EstimatorResult { secpar: 127.0 }));
+        enforce_estimated_security(
+            "unit test",
+            1,
+            1,
+            1.0,
+            &Ok(EstimatorResult { secpar: 127.0 }),
+        );
     }
 
     /// Estimator-only follow-up to the long-running full-chain audit.  The
@@ -699,7 +717,7 @@ mod tests {
             eprintln!(
                 "HARDNESS_AUDIT_MIN_RANK label={label} observed_bound={bound} \
                  minimum_rank_ge_128={:?}",
-                minimum_rank_for_observed_bound(witness_height, bound, 128.0, 64)
+                minimum_rank_for_bound(witness_height, bound, 128.0, 64)
             );
         }
     }
