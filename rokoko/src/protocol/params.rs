@@ -71,13 +71,14 @@ const NB_P_26: [[f64; 2]; 7] = [
     [31397269.239040073, 57883769.33763827],
 ];
 // Fixed-weight p-28 calibration. Entries are coordinatewise maxima from the
-// deterministic tau=32 and tau=34 full-chain calibration runs; NORM_MARGIN is
-// applied by assign_norm_bounds. This is an empirical benchmark ledger, not a
+// deterministic tau=32 and tau=34 full-chain calibration runs and the
+// combined boundary-regression stream; NORM_MARGIN is applied by
+// assign_norm_bounds. This is an empirical benchmark ledger, not a
 // tail-probability proof.
 const NB_P_28: [[f64; 2]; 7] = [
     [13703071.36831871, 3747.026954800299],
     [27607098.932705678, 4577.198160447066],
-    [27591863.492403172, 5268.861451964741],
+    [28436523.79970082, 5268.861451964741],
     [22176852.43726607, 5280.734986722966],
     [28962741.11024302, 5273.19912387158],
     [5547059.4504792355, 230762.43129461087],
@@ -138,7 +139,7 @@ const PB_P_26: [f64; 6] = [
 const PB_P_28: [f64; 6] = [
     0.0,
     23961662.027517207,
-    23956004.714774705,
+    24907637.347168,
     21096021.725988906,
     28272485.717434715,
     31090130.645210836,
@@ -181,7 +182,7 @@ const FB_P_26: [f64; 6] = [
 const FB_P_28: [f64; 6] = [
     26360585.84413571,
     27583490.76053078,
-    25737650.31005348,
+    28885042.49396701,
     30295320.427160215,
     26371584.948205918,
     15572725.118706232,
