@@ -3,12 +3,12 @@ use std::cmp::max;
 use crate::common::{ring_arithmetic::RingElement, sumcheck_element::SumcheckElement};
 
 /// Dense polynomial representation used throughout the sumcheck routines.
-/// The storage is fixed to four coefficients because, at the moment,
-/// the protocol only needs up to cubic polynomials.
+/// Recomposition-aware component norm checks have degree five, hence six
+/// coefficients.
 #[derive(Clone, Debug)]
 pub struct Polynomial<E: SumcheckElement = RingElement> {
     // coefficients[i] corresponds to x^i.
-    pub coefficients: [E; 4],
+    pub coefficients: [E; 6],
     /// How many coefficients are actually active (degree + 1).
     pub num_coefficients: usize,
 }
@@ -16,8 +16,8 @@ pub struct Polynomial<E: SumcheckElement = RingElement> {
 impl<E: SumcheckElement> Polynomial<E> {
     pub fn new(num_coefficients: usize) -> Self {
         debug_assert!(
-            num_coefficients <= 3,
-            "Only up to cubic polynomials are supported for now"
+            num_coefficients <= 6,
+            "Only polynomials up to degree five are supported"
         );
         Polynomial {
             coefficients: std::array::from_fn(|_| E::zero()),
@@ -77,7 +77,7 @@ pub fn mul_poly_into<E: SumcheckElement>(
     poly_1: &Polynomial<E>,
 ) {
     debug_assert!(
-        poly_0.num_coefficients + poly_1.num_coefficients - 1 <= 4,
+        poly_0.num_coefficients + poly_1.num_coefficients - 1 <= 6,
         "Resulting polynomial degree exceeds supported maximum"
     );
 
@@ -168,10 +168,12 @@ pub fn mul_poly_into<E: SumcheckElement>(
         return;
     }
 
-    // This works only in one poly is constant
+    result.set_zero();
     for i in 0..poly_0.num_coefficients {
         for j in 0..poly_1.num_coefficients {
-            result.coefficients[i + j] *= (&poly_0.coefficients[i], &poly_1.coefficients[j])
+            let mut term = E::zero();
+            term *= (&poly_0.coefficients[i], &poly_1.coefficients[j]);
+            result.coefficients[i + j] += &term;
         }
     }
     result.num_coefficients = poly_0.num_coefficients + poly_1.num_coefficients - 1;
