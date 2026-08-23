@@ -314,7 +314,7 @@ fn p_1_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         projection_recursion: AuxProjection::Coarse(AuxRecursionConfig {
-            decomposition_base_log: 22,
+            decomposition_base_log: 23,
             decomposition_chunks: 1,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -368,7 +368,7 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
         projection_recursion: AuxProjection::Fine {
             nof_batches: 2,
             recursion_constant_term: AuxRecursionConfig {
-                decomposition_base_log: 22,
+                decomposition_base_log: 23,
                 decomposition_chunks: 1,
                 rank: 2,
                 next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -506,7 +506,7 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 22,
+            decomposition_base_log: 23,
             decomposition_chunks: 1,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -547,7 +547,7 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 22,
+            decomposition_base_log: 23,
             decomposition_chunks: 1,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -588,7 +588,7 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 22,
+            decomposition_base_log: 23,
             decomposition_chunks: 1,
             rank: 2,
             next: None,
