@@ -657,9 +657,206 @@ pub fn check_simple_round(
 #[cfg(test)]
 mod tests {
     use super::{
-        enforce_estimated_security, minimum_rank_for_bound, recomposition_l2_operator_norm,
+        certified_recomposition_bound, enforce_estimated_security, minimum_rank_for_bound,
+        recomposition_l2_operator_norm, EXTRACTION_SLACK, JL_ALPHA_RP, SPECTRAL_OP_NORM_SAFE_BOUND,
     };
-    use crate::common::estimator::EstimatorResult;
+    use crate::{
+        common::{
+            config::MOD_Q,
+            estimator::{estimate_rsis_security, EstimatorResult, RSISParameters},
+        },
+        protocol::{
+            commitment::RecursionConfig,
+            config::{Config, Projection},
+            params::{P_LARGE, P_MEDIUM},
+        },
+    };
+
+    fn certify_sis(scope: &str, m: usize, rank: usize, bound: f64) {
+        let result = estimate_rsis_security(&RSISParameters {
+            m: m as u64,
+            n: rank as u64,
+            length_bound: bound.ceil() as u64,
+        });
+        enforce_estimated_security(scope, m, rank, bound, &result);
+        eprintln!(
+            "STATIC_CERT security scope={scope:?} m={m} rank={rank} bound={bound} result={result:?}"
+        );
+    }
+
+    fn certify_recursion(
+        scope: &str,
+        config: &RecursionConfig,
+        base_size: usize,
+        outer_bound: f64,
+        inner_bound: f64,
+        depth: usize,
+    ) {
+        let m = base_size * config.decomposition_chunks;
+        let bound = if config.next.is_some() {
+            outer_bound
+        } else {
+            inner_bound
+        };
+        certify_sis(
+            &format!("{scope} recursive depth {depth}"),
+            m,
+            config.rank,
+            bound,
+        );
+        if let Some(next) = config.next.as_deref() {
+            certify_recursion(
+                scope,
+                next,
+                config.rank,
+                outer_bound,
+                inner_bound,
+                depth + 1,
+            );
+        }
+    }
+
+    fn next_width(config: &Config) -> usize {
+        match config {
+            Config::Sumcheck(next) => next.witness_width,
+            Config::Intermediate(next) => next.witness_width,
+            Config::Simple(next) => next.witness_width,
+        }
+    }
+
+    fn certify_registered_config(name: &str, config: &Config) {
+        let mut round = 0;
+        let mut current = config;
+        loop {
+            match current {
+                Config::Sumcheck(sumcheck) => {
+                    certify_recursion(
+                        &format!("{name}/r{round}/commitment"),
+                        &sumcheck.commitment_recursion,
+                        sumcheck.basic_commitment_rank.next_power_of_two() * sumcheck.witness_width,
+                        sumcheck.norm_bound,
+                        sumcheck.most_inner_norm_bound,
+                        0,
+                    );
+                    certify_recursion(
+                        &format!("{name}/r{round}/opening"),
+                        &sumcheck.opening_recursion,
+                        sumcheck.nof_openings * sumcheck.witness_width,
+                        sumcheck.norm_bound,
+                        sumcheck.most_inner_norm_bound,
+                        0,
+                    );
+                    match &sumcheck.projection_recursion {
+                        Projection::Coarse(recursion) => certify_recursion(
+                            &format!("{name}/r{round}/projection"),
+                            recursion,
+                            sumcheck.witness_height * sumcheck.witness_width
+                                / sumcheck.projection_ratio,
+                            sumcheck.norm_bound,
+                            sumcheck.most_inner_norm_bound,
+                            0,
+                        ),
+                        Projection::Fine(fine) => {
+                            certify_recursion(
+                                &format!("{name}/r{round}/projection-constant"),
+                                &fine.recursion_constant_term,
+                                sumcheck.witness_height * sumcheck.witness_width
+                                    / sumcheck.projection_ratio,
+                                sumcheck.norm_bound,
+                                sumcheck.most_inner_norm_bound,
+                                0,
+                            );
+                            certify_recursion(
+                                &format!("{name}/r{round}/projection-batched"),
+                                &fine.recursion_batched_projection,
+                                sumcheck.witness_width * fine.nof_batches,
+                                sumcheck.norm_bound,
+                                sumcheck.most_inner_norm_bound,
+                                0,
+                            );
+                        }
+                        Projection::Skip => {}
+                    }
+
+                    let extracted = sumcheck.folded_recomposed_norm_bound
+                        * SPECTRAL_OP_NORM_SAFE_BOUND
+                        * EXTRACTION_SLACK;
+                    let argued = sumcheck.projection_recomposed_norm_bound / JL_ALPHA_RP;
+                    if !matches!(sumcheck.projection_recursion, Projection::Skip) {
+                        let width = next_width(
+                            sumcheck
+                                .next
+                                .as_deref()
+                                .expect("a projected sumcheck round must have a successor"),
+                        );
+                        let lhs = width as f64 * argued.powi(2);
+                        let rhs = MOD_Q as f64 / 2.0;
+                        eprintln!(
+                            "STATIC_CERT gate name={name:?} round={round} width={width} lhs={lhs} rhs={rhs} holds={}",
+                            lhs < rhs
+                        );
+                        assert!(lhs < rhs, "{name} round {round} fails centered uniqueness");
+                    }
+                    certify_sis(
+                        &format!("{name}/r{round}/basic"),
+                        sumcheck.witness_height,
+                        sumcheck.basic_commitment_rank,
+                        extracted.max(argued),
+                    );
+                    let Some(next) = sumcheck.next.as_deref() else {
+                        break;
+                    };
+                    current = next;
+                }
+                Config::Intermediate(intermediate) => {
+                    let extracted = certified_recomposition_bound(
+                        intermediate.norm_bound,
+                        intermediate.witness_decomposition_base_log,
+                        intermediate.witness_decomposition_chunks,
+                    ) * SPECTRAL_OP_NORM_SAFE_BOUND
+                        * EXTRACTION_SLACK;
+                    let argued = intermediate.projection_norm_bound / JL_ALPHA_RP;
+                    let lhs = argued.powi(2);
+                    let rhs = MOD_Q as f64 / 2.0;
+                    assert!(
+                        lhs < rhs,
+                        "{name} intermediate round fails centered uniqueness"
+                    );
+                    certify_sis(
+                        &format!("{name}/r{round}/intermediate-basic"),
+                        intermediate.witness_height,
+                        intermediate.basic_commitment_rank,
+                        extracted.max(argued),
+                    );
+                    let Some(next) = intermediate.next.as_deref() else {
+                        break;
+                    };
+                    current = next;
+                }
+                Config::Simple(simple) => {
+                    let extracted =
+                        simple.witness_norm_bound * SPECTRAL_OP_NORM_SAFE_BOUND * EXTRACTION_SLACK;
+                    let argued = simple.projection_norm_bound / JL_ALPHA_RP;
+                    let lhs = simple.witness_width as f64 * argued.powi(2);
+                    let rhs = MOD_Q as f64 / 2.0;
+                    eprintln!(
+                        "STATIC_CERT gate name={name:?} round={round} width={} lhs={lhs} rhs={rhs} holds={}",
+                        simple.witness_width,
+                        lhs < rhs
+                    );
+                    assert!(lhs < rhs, "{name} simple round fails centered uniqueness");
+                    certify_sis(
+                        &format!("{name}/r{round}/simple-basic"),
+                        simple.witness_height,
+                        simple.basic_commitment_rank,
+                        extracted.max(argued),
+                    );
+                    break;
+                }
+            }
+            round += 1;
+        }
+    }
 
     #[test]
     fn recomposition_norm_uses_the_radix_not_its_logarithm() {
@@ -682,6 +879,12 @@ mod tests {
             1.0,
             &Ok(EstimatorResult { secpar: 128.0 }),
         );
+    }
+
+    #[test]
+    fn registered_p28_and_p30_bounds_are_128_bit_certified() {
+        certify_registered_config("p28", &P_MEDIUM);
+        certify_registered_config("p30", &P_LARGE);
     }
 
     #[test]
