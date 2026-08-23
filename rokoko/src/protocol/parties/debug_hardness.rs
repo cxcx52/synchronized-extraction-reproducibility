@@ -663,8 +663,8 @@ mod tests {
     };
     use crate::{
         common::{
-            config::MOD_Q,
-            estimator::{estimate_rsis_security, EstimatorResult, RSISParameters},
+            config::{DEGREE, MOD_Q},
+            estimator::{estimate_sis_security, EstimatorResult, Norm, SISParameters},
         },
         protocol::{
             commitment::RecursionConfig,
@@ -673,15 +673,33 @@ mod tests {
         },
     };
 
+    fn audit_modulus() -> u64 {
+        let Some(raw) = std::env::var_os("ROKOKO_AUDIT_MODULUS") else {
+            return MOD_Q;
+        };
+        let parsed = raw
+            .to_str()
+            .expect("ROKOKO_AUDIT_MODULUS must be UTF-8")
+            .parse::<u64>()
+            .expect("ROKOKO_AUDIT_MODULUS must be an unsigned integer");
+        assert!(parsed > 2, "ROKOKO_AUDIT_MODULUS must exceed two");
+        parsed
+    }
+
     fn certify_sis(scope: &str, m: usize, rank: usize, bound: f64) {
-        let result = estimate_rsis_security(&RSISParameters {
-            m: m as u64,
-            n: rank as u64,
+        let modulus = audit_modulus();
+        let result = estimate_sis_security(&SISParameters {
+            m: m as u64 * DEGREE as u64,
+            n: rank as u64 * DEGREE as u64,
+            q: modulus,
             length_bound: bound.ceil() as u64,
+            norm: Norm::L2,
         });
-        enforce_estimated_security(scope, m, rank, bound, &result);
+        if modulus == MOD_Q {
+            enforce_estimated_security(scope, m, rank, bound, &result);
+        }
         eprintln!(
-            "STATIC_CERT security scope={scope:?} m={m} rank={rank} bound={bound} result={result:?}"
+            "STATIC_CERT security scope={scope:?} m={m} rank={rank} bound={bound} result={result:?} modulus={modulus}"
         );
     }
 
@@ -791,7 +809,7 @@ mod tests {
                                 .expect("a projected sumcheck round must have a successor"),
                         );
                         let lhs = width as f64 * argued.powi(2);
-                        let rhs = MOD_Q as f64 / 2.0;
+                        let rhs = audit_modulus() as f64 / 2.0;
                         eprintln!(
                             "STATIC_CERT gate name={name:?} round={round} width={width} lhs={lhs} rhs={rhs} holds={}",
                             lhs < rhs
@@ -820,7 +838,7 @@ mod tests {
                         * EXTRACTION_SLACK;
                     let argued = intermediate.projection_norm_bound / JL_ALPHA_RP;
                     let lhs = argued.powi(2);
-                    let rhs = MOD_Q as f64 / 2.0;
+                    let rhs = audit_modulus() as f64 / 2.0;
                     eprintln!(
                         "STATIC_CERT gate name={name:?} round={round} width=1 lhs={lhs} rhs={rhs} holds={}",
                         lhs < rhs
@@ -847,7 +865,7 @@ mod tests {
                         simple.witness_norm_bound * SPECTRAL_OP_NORM_SAFE_BOUND * EXTRACTION_SLACK;
                     let argued = simple.projection_norm_bound / JL_ALPHA_RP;
                     let lhs = simple.witness_width as f64 * argued.powi(2);
-                    let rhs = MOD_Q as f64 / 2.0;
+                    let rhs = audit_modulus() as f64 / 2.0;
                     eprintln!(
                         "STATIC_CERT gate name={name:?} round={round} width={} lhs={lhs} rhs={rhs} holds={}",
                         simple.witness_width,
