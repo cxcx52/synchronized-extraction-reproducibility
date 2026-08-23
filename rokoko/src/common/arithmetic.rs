@@ -350,7 +350,7 @@ pub fn inv_mod(a: u64) -> u64 {
 #[inline]
 pub fn field_to_ring_element(fe: &QuadraticExtension) -> RingElement {
     let mut result = RingElement::zero(Representation::HomogenizedFieldExtensions);
-    for i in 0..2 {
+    for i in 0..fe.coeffs.len() {
         for j in 0..HALF_DEGREE {
             result.v[j + i * HALF_DEGREE] += fe.coeffs[i];
         }
@@ -360,7 +360,7 @@ pub fn field_to_ring_element(fe: &QuadraticExtension) -> RingElement {
 
 #[inline]
 pub fn field_to_ring_element_into(r: &mut RingElement, fe: &QuadraticExtension) {
-    for i in 0..2 {
+    for i in 0..fe.coeffs.len() {
         for j in 0..HALF_DEGREE {
             r.v[j + i * HALF_DEGREE] = fe.coeffs[i];
         }
@@ -380,12 +380,10 @@ pub static TWO: LazyLock<RingElement> =
 pub static ZERO: LazyLock<RingElement> =
     LazyLock::new(|| RingElement::zero(Representation::IncompleteNTT));
 
-pub static ONE_QUAD: LazyLock<QuadraticExtension> =
-    LazyLock::new(|| QuadraticExtension { coeffs: [1, 0] });
+pub static ONE_QUAD: LazyLock<QuadraticExtension> = LazyLock::new(QuadraticExtension::one);
 pub static TWO_QUAD: LazyLock<QuadraticExtension> =
-    LazyLock::new(|| QuadraticExtension { coeffs: [2, 0] });
-pub static ZERO_QUAD: LazyLock<QuadraticExtension> =
-    LazyLock::new(|| QuadraticExtension { coeffs: [0, 0] });
+    LazyLock::new(|| QuadraticExtension::from_base(2));
+pub static ZERO_QUAD: LazyLock<QuadraticExtension> = LazyLock::new(QuadraticExtension::zero);
 
 // this is only for u64
 pub fn precompute_structured_values(layers: &[u64]) -> Vec<u64> {
@@ -558,9 +556,7 @@ mod tests {
 
     #[test]
     fn test_field_to_ring_roundtrip() {
-        let fe = QuadraticExtension {
-            coeffs: [123456789, 987654321],
-        };
+        let fe = QuadraticExtension::from_pair(123456789, 987654321);
         let re = field_to_ring_element(&fe);
         let fes = re.split_into_quadratic_extensions();
         for f in fes {

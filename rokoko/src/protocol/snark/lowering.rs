@@ -128,7 +128,9 @@ impl SubTable<'_> {
 }
 
 fn scalar_dense(v: &[QuadraticExtension]) -> Option<Vec<u64>> {
-    if v.iter().any(|qe| qe.coeffs[1] != 0) {
+    if v.iter()
+        .any(|qe| qe.coeffs[1..].iter().any(|coefficient| *coefficient != 0))
+    {
         return None;
     }
     Some(v.iter().map(|qe| qe.coeffs[0]).collect())
@@ -156,7 +158,10 @@ fn expand_field_tensor_qe(layers: &[QuadraticExtension]) -> Vec<QuadraticExtensi
 
 fn scalar_tensor_expansion(layers: &[QuadraticExtension]) -> Option<Vec<u64>> {
     use crate::common::config::MOD_Q;
-    if layers.iter().any(|a| a.coeffs[1] != 0) {
+    if layers
+        .iter()
+        .any(|a| a.coeffs[1..].iter().any(|coefficient| *coefficient != 0))
+    {
         return None;
     }
     let mut vals = vec![1u64];
@@ -1596,9 +1601,7 @@ mod tests {
         let quarter = n / 4;
 
         let layers: Vec<QuadraticExtension> = (0..6)
-            .map(|i| QuadraticExtension {
-                coeffs: [7 + 3 * i as u64, 11 + 5 * i as u64],
-            })
+            .map(|i| QuadraticExtension::from_pair(7 + 3 * i as u64, 11 + 5 * i as u64))
             .collect();
         let dense1 = expand_field_tensor(&layers);
         let value1 = inner_product_direct(&dense1, &witness.data[quarter..2 * quarter]);
@@ -1661,9 +1664,7 @@ mod tests {
         let start = prefix.prefix << (n.ilog2() as usize - prefix.length);
 
         let alpha: Vec<QuadraticExtension> = (0..mb)
-            .map(|i| QuadraticExtension {
-                coeffs: [7 + 3 * i as u64, 11 + 5 * i as u64],
-            })
+            .map(|i| QuadraticExtension::from_pair(7 + 3 * i as u64, 11 + 5 * i as u64))
             .collect();
         let k = sample_random_short_vector(1 << in_bits, 50, Representation::IncompleteNTT);
 
@@ -1729,9 +1730,7 @@ mod tests {
 
         // field dense table over block 1
         let tab: Vec<QuadraticExtension> = (0..quarter)
-            .map(|i| QuadraticExtension {
-                coeffs: [3 + i as u64, 5 + 2 * i as u64],
-            })
+            .map(|i| QuadraticExtension::from_pair(3 + i as u64, 5 + 2 * i as u64))
             .collect();
         let table_ring: Vec<RingElement> = tab.iter().map(embed_qe).collect();
         let value_a = inner_product_direct(&table_ring, &witness.data[quarter..2 * quarter]);

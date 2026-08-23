@@ -233,9 +233,7 @@ mod tests {
 
         let mut challenge_qe = vec![];
         for i in 0..HALF_DEGREE {
-            challenge_qe.push(QuadraticExtension {
-                coeffs: [i as u64 + 1, 0],
-            });
+            challenge_qe.push(QuadraticExtension::from_base(i as u64 + 1));
         }
 
         let mut combiner = RingToFieldCombiner::new(sumcheck.clone());
@@ -250,12 +248,10 @@ mod tests {
 
         debug_assert_eq!(
             poly.at_zero() + poly.at_one(),
-            QuadraticExtension {
-                coeffs: [claim as u64, 0],
-            }
+            QuadraticExtension::from_base(claim as u64)
         );
 
-        let r0qe = QuadraticExtension { coeffs: [7, 3] };
+        let r0qe = QuadraticExtension::from_pair(7, 3);
 
         let mut r0 = RingElement::constant(0, Representation::HomogenizedFieldExtensions);
 
@@ -270,7 +266,7 @@ mod tests {
 
         debug_assert_eq!(poly.at_zero() + poly.at_one(), claim_after_r0);
 
-        let r1qe = QuadraticExtension { coeffs: [21, 37] };
+        let r1qe = QuadraticExtension::from_pair(21, 37);
 
         let mut r1 = RingElement::constant(0, Representation::HomogenizedFieldExtensions);
 
@@ -285,7 +281,7 @@ mod tests {
 
         debug_assert_eq!(poly.at_zero() + poly.at_one(), claim_after_r1);
 
-        let r2qe = QuadraticExtension { coeffs: [53, 89] };
+        let r2qe = QuadraticExtension::from_pair(53, 89);
 
         let mut r2 = RingElement::constant(0, Representation::HomogenizedFieldExtensions);
 
@@ -330,9 +326,7 @@ mod tests {
 
         let mut challenge_qe = [QuadraticExtension::zero(); HALF_DEGREE];
         for i in 0..HALF_DEGREE {
-            challenge_qe[i] = QuadraticExtension {
-                coeffs: [i as u64 + 1, 0],
-            };
+            challenge_qe[i] = QuadraticExtension::from_base(i as u64 + 1);
         }
 
         let mut combiner_eval = RingToFieldCombinerEvaluation::new(eval);

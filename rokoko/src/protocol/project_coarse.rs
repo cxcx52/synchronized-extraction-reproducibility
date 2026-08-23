@@ -5,7 +5,7 @@
 
 use crate::common::{
     arithmetic::centered_i16_from_u64_mod_q,
-    config::{DEGREE, HALF_DEGREE, MOD_Q},
+    config::{DEGREE, EXTENSION_DEGREE, HALF_DEGREE, MOD_Q},
     matrix::VerticallyAlignedMatrix,
     projection_matrix::ProjectionMatrix,
     ring_arithmetic::{Representation, RingElement},
@@ -37,13 +37,14 @@ pub fn prepare_i16_witness(
         for (out, cr) in dst.iter_mut().zip(src) {
             debug_assert!(cr.representation == Representation::IncompleteNTT);
             unsafe {
-                ntt_inverse(temp.0.as_mut_ptr(), cr.v.as_ptr(), HALF_DEGREE, MOD_Q);
-                ntt_inverse(
-                    temp.0.as_mut_ptr().add(HALF_DEGREE),
-                    cr.v.as_ptr().add(HALF_DEGREE),
-                    HALF_DEGREE,
-                    MOD_Q,
-                );
+                for residue in 0..EXTENSION_DEGREE {
+                    ntt_inverse(
+                        temp.0.as_mut_ptr().add(residue * HALF_DEGREE),
+                        cr.v.as_ptr().add(residue * HALF_DEGREE),
+                        HALF_DEGREE,
+                        MOD_Q,
+                    );
+                }
             }
             centered_i16_from_u64_mod_q(&mut out.0, &temp.0);
         }

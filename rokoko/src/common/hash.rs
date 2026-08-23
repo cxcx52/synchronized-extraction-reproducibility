@@ -65,11 +65,9 @@ impl HashWrapper {
 
     pub fn update_with_quadratic_extension_element(&mut self, element: &QuadraticExtension) {
         self.dbg_fs("update_with_quadratic_extension_element", 1);
-        // hack: treat the coeffs slice as raw bytes (native endianness)
-        let ptr = element.coeffs.as_ptr() as *const u8;
-        let len = element.coeffs.len() * std::mem::size_of::<u64>();
-        let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
-        self.transcript.update(bytes);
+        for coefficient in &element.coeffs {
+            self.transcript.update(&coefficient.to_le_bytes());
+        }
     }
 
     pub fn update_with_quadratic_extension_slice(&mut self, elements: &[QuadraticExtension]) {

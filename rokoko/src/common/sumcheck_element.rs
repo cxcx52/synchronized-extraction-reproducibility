@@ -69,11 +69,11 @@ impl SumcheckElement for RingElement {
 
 impl SumcheckElement for QuadraticExtension {
     fn zero() -> Self {
-        QuadraticExtension { coeffs: [0, 0] }
+        QuadraticExtension::zero()
     }
 
     fn one() -> Self {
-        QuadraticExtension { coeffs: [1, 0] }
+        QuadraticExtension::one()
     }
 
     fn one_ref() -> &'static Self {
@@ -89,11 +89,11 @@ impl SumcheckElement for QuadraticExtension {
     }
 
     fn set_zero(&mut self) {
-        self.coeffs = [0, 0];
+        self.coeffs.fill(0);
     }
 
     fn allocate_zero_vec(len: usize) -> Vec<Self> {
-        vec![QuadraticExtension { coeffs: [0, 0] }; len]
+        vec![QuadraticExtension::zero(); len]
     }
 
     fn set_from(&mut self, other: &Self) {

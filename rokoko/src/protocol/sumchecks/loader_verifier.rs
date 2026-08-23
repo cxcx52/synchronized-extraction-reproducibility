@@ -134,7 +134,7 @@ pub fn load_verifier_sumcheck_data(
                 tensor_layers: challenges
                     .c_0_layers
                     .iter()
-                    .map(|e| QuadraticExtension { coeffs: [*e, 0] })
+                    .map(|e| QuadraticExtension::from_base(*e))
                     .collect::<Vec<_>>(),
             };
             fine_proj_eval.sumchecks[batch_idx]
@@ -169,24 +169,22 @@ pub fn load_verifier_sumcheck_data(
                 tensor_layers: challenges
                     .c_2_layers
                     .iter()
-                    .map(|&x| QuadraticExtension { coeffs: [x, 0] })
+                    .map(|&x| QuadraticExtension::from_base(x))
                     .collect::<Vec<QuadraticExtension>>(),
             };
 
             let rhs_layers_field = {
                 let mut layers = Vec::new();
                 for c_2 in &challenges.c_2_layers {
-                    layers.push(QuadraticExtension { coeffs: [*c_2, 0] });
+                    layers.push(QuadraticExtension::from_base(*c_2));
                 }
 
                 for c_0 in &challenges.c_0_layers {
-                    layers.push(QuadraticExtension { coeffs: [*c_0, 0] });
+                    layers.push(QuadraticExtension::from_base(*c_0));
                 }
 
                 for layer in &e_0_layers {
-                    layers.push(QuadraticExtension {
-                        coeffs: [*layer, 0],
-                    });
+                    layers.push(QuadraticExtension::from_base(*layer));
                 }
                 StructuredRow {
                     tensor_layers: layers,

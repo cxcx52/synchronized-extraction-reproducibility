@@ -3,7 +3,7 @@ use num::range;
 use crate::{
     common::{
         arithmetic::HALF_WAY_MOD_Q,
-        config::{HALF_DEGREE, MOD_Q},
+        config::{EXTENSION_DEGREE, HALF_DEGREE, MOD_Q},
         projection_matrix::ProjectionMatrix,
         ring_arithmetic::{QuadraticExtension, Representation, RingElement},
         structured_row::{PreprocessedRow, StructuredRow},
@@ -167,6 +167,14 @@ pub fn projection_flatter_1_times_matrix(
     projection_matrix: &ProjectionMatrix,
     projection_flatter_1: &PreprocessedRow,
 ) -> Vec<QuadraticExtension> {
+    #[cfg(feature = "quartic-q")]
+    {
+        // The AVX-512 implementation below packs two base-field limbs per
+        // extension element.  Preserve that optimized quadratic path, while
+        // the quartic backend uses the degree-generic reference evaluator.
+        return projection_flatter_1_times_matrix_ref(projection_matrix, projection_flatter_1);
+    }
+
     #[cfg(not(all(target_arch = "x86_64", target_feature = "avx512f")))]
     {
         return projection_flatter_1_times_matrix_ref(projection_matrix, projection_flatter_1);
@@ -182,11 +190,16 @@ pub fn projection_flatter_1_times_matrix(
 
     for inner_row in 0..height {
         let weight = &projection_flatter_1.preprocessed_row[inner_row];
-        let weight_field = QuadraticExtension {
-            coeffs: [weight.v[0], weight.v[HALF_DEGREE]],
-        };
+        let mut weight_field = QuadraticExtension::zero();
+        for coefficient in 0..weight_field.coeffs.len() {
+            weight_field.coeffs[coefficient] = weight.v[coefficient * HALF_DEGREE];
+        }
 
-        #[cfg(all(target_arch = "x86_64", target_feature = "avx512f"))]
+        #[cfg(all(
+            target_arch = "x86_64",
+            target_feature = "avx512f",
+            not(feature = "quartic-q")
+        ))]
         {
             use std::arch::x86_64::*;
 
@@ -259,12 +272,12 @@ pub fn projection_flatter_1_times_matrix(
                     if !is_non_zero {
                         continue;
                     }
-                    if is_positive {
-                        result_field[i].coeffs[0] += weight_field.coeffs[0];
-                        result_field[i].coeffs[1] += weight_field.coeffs[1];
-                    } else {
-                        result_field[i].coeffs[0] -= weight_field.coeffs[0];
-                        result_field[i].coeffs[1] -= weight_field.coeffs[1];
+                    for coefficient in 0..EXTENSION_DEGREE {
+                        if is_positive {
+                            result_field[i].coeffs[coefficient] += weight_field.coeffs[coefficient];
+                        } else {
+                            result_field[i].coeffs[coefficient] -= weight_field.coeffs[coefficient];
+                        }
                     }
                 }
             }
@@ -276,7 +289,7 @@ pub fn projection_flatter_1_times_matrix(
         eltwise_reduce_mod(
             result_field[0].coeffs.as_mut_ptr(),
             result_field[0].coeffs.as_ptr(),
-            2 * inner_width as u64,
+            EXTENSION_DEGREE as u64 * inner_width as u64,
             MOD_Q,
         );
     }
@@ -299,21 +312,22 @@ pub fn projection_flatter_1_times_matrix_ref(
 
     for inner_row in 0..height {
         let weight = &projection_flatter_1.preprocessed_row[inner_row];
-        let weight_field = QuadraticExtension {
-            coeffs: [weight.v[0], weight.v[HALF_DEGREE]],
-        };
+        let mut weight_field = QuadraticExtension::zero();
+        for coefficient in 0..weight_field.coeffs.len() {
+            weight_field.coeffs[coefficient] = weight.v[coefficient * HALF_DEGREE];
+        }
 
         for i in 0..inner_width {
             let (is_positive, is_non_zero) = projection_matrix[(inner_row, i)];
             if !is_non_zero {
                 continue;
             }
-            if is_positive {
-                result_field[i].coeffs[0] += weight_field.coeffs[0];
-                result_field[i].coeffs[1] += weight_field.coeffs[1];
-            } else {
-                result_field[i].coeffs[0] -= weight_field.coeffs[0];
-                result_field[i].coeffs[1] -= weight_field.coeffs[1];
+            for coefficient in 0..EXTENSION_DEGREE {
+                if is_positive {
+                    result_field[i].coeffs[coefficient] += weight_field.coeffs[coefficient];
+                } else {
+                    result_field[i].coeffs[coefficient] -= weight_field.coeffs[coefficient];
+                }
             }
         }
     }
@@ -323,7 +337,7 @@ pub fn projection_flatter_1_times_matrix_ref(
         eltwise_reduce_mod(
             result_field[0].coeffs.as_mut_ptr(),
             result_field[0].coeffs.as_ptr(),
-            2 * inner_width as u64,
+            EXTENSION_DEGREE as u64 * inner_width as u64,
             MOD_Q,
         );
     }

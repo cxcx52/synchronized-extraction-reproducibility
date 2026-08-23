@@ -483,8 +483,12 @@ impl EvaluationSumcheckData for RingToFieldWrapperEvaluation {
     fn evaluate(&mut self, point: &Vec<Self::Element>) -> &Self::Element {
         let point_field: Vec<QuadraticExtension> = point
             .iter()
-            .map(|r| QuadraticExtension {
-                coeffs: [r.v[0], r.v[HALF_DEGREE]],
+            .map(|r| {
+                let mut value = QuadraticExtension::zero();
+                for coefficient in 0..value.coeffs.len() {
+                    value.coeffs[coefficient] = r.v[coefficient * HALF_DEGREE];
+                }
+                value
             })
             .collect();
 

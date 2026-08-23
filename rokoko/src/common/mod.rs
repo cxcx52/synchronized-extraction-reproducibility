@@ -29,9 +29,14 @@ pub fn init_common() {
     LazyLock::force(&FIELD_SHIFT_FACTOR);
     LazyLock::force(&INV_HALF_DEGREE);
     LazyLock::force(&TWO_INV_HALF_DEGREE);
-    LazyLock::force(&CONJUGATION_NTT_TRANSFORM);
-    LazyLock::force(&NORMALIZE_INCOMPLETE_NTT_FACTORS);
-    LazyLock::force(&NORMALIZE_INCOMPLETE_NTT_FACTORS_INVERSE);
+    #[cfg(not(feature = "quartic-q"))]
+    {
+        LazyLock::force(&CONJUGATION_NTT_TRANSFORM);
+        LazyLock::force(&NORMALIZE_INCOMPLETE_NTT_FACTORS);
+        LazyLock::force(&NORMALIZE_INCOMPLETE_NTT_FACTORS_INVERSE);
+    }
+    #[cfg(feature = "quartic-q")]
+    LazyLock::force(&QUARTIC_CONJUGATION_NTT_TRANSFORM);
     LazyLock::force(&ONE);
     LazyLock::force(&ONE_QUAD);
     LazyLock::force(&ZERO);
@@ -40,6 +45,7 @@ pub fn init_common() {
     LazyLock::force(&TWO_QUAD);
     LazyLock::force(&HALF_WAY_MOD_Q);
     LazyLock::force(&HALF_WAY_MOD_Q_RING_CF);
+    #[cfg(not(feature = "quartic-q"))]
     LazyLock::force(&CONSTANT_TERM_FACTORS);
 
     // init some caches of HEXL

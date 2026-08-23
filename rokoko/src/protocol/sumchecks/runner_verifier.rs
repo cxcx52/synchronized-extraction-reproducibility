@@ -316,7 +316,7 @@ pub fn sumcheck_verifier(
             temp
         };
         let mut temp = batched_claim.split_into_quadratic_extensions();
-        let mut result = QuadraticExtension { coeffs: [0, 0] };
+        let mut result = QuadraticExtension::zero();
         for i in 0..HALF_DEGREE {
             temp[i] *= &qe[i];
             result += &temp[i];

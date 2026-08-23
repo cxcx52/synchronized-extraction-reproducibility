@@ -49,11 +49,8 @@ impl QuarticSlot {
         }
         for index in (EXTENSION_DEGREE..convolution.len()).rev() {
             let reduced = multiply_mod(convolution[index], beta, QUARTIC_Q);
-            convolution[index - EXTENSION_DEGREE] = add_mod(
-                convolution[index - EXTENSION_DEGREE],
-                reduced,
-                QUARTIC_Q,
-            );
+            convolution[index - EXTENSION_DEGREE] =
+                add_mod(convolution[index - EXTENSION_DEGREE], reduced, QUARTIC_Q);
         }
         Self {
             coeffs: convolution[..EXTENSION_DEGREE].try_into().unwrap(),
@@ -92,6 +89,9 @@ pub struct QuarticTransform {
     pub beta: u64,
     /// Odd exponents such that `zeta_i=beta^slot_exponents[i]`.
     pub slot_exponents: [usize; SLOT_COUNT],
+    raw_to_homogeneous_index: [usize; RING_DEGREE],
+    raw_to_homogeneous_scale: [u64; RING_DEGREE],
+    homogeneous_to_raw_scale: [u64; RING_DEGREE],
 }
 
 impl QuarticTransform {
@@ -114,10 +114,28 @@ impl QuarticTransform {
         sorted.sort_unstable();
         assert_eq!(sorted, std::array::from_fn(|index| 2 * index + 1));
 
+        let raw_to_homogeneous_index = std::array::from_fn(|raw_index| {
+            let raw_degree = raw_index / SLOT_COUNT;
+            let slot = raw_index % SLOT_COUNT;
+            let power = exponents[slot] * raw_degree;
+            (power % EXTENSION_DEGREE) * SLOT_COUNT + slot
+        });
+        let raw_to_homogeneous_scale = std::array::from_fn(|raw_index| {
+            let raw_degree = raw_index / SLOT_COUNT;
+            let slot = raw_index % SLOT_COUNT;
+            let power = exponents[slot] * raw_degree;
+            power_mod(beta, (power / EXTENSION_DEGREE) as u64, QUARTIC_Q)
+        });
+        let homogeneous_to_raw_scale =
+            raw_to_homogeneous_scale.map(|scale| inv_mod(scale, QUARTIC_Q));
+
         Self {
             raw_shift_factors: shifts,
             beta,
             slot_exponents: exponents,
+            raw_to_homogeneous_index,
+            raw_to_homogeneous_scale,
+            homogeneous_to_raw_scale,
         }
     }
 
@@ -140,14 +158,95 @@ impl QuarticTransform {
                 let power = exponent * raw_degree;
                 let homogeneous_degree = power % EXTENSION_DEGREE;
                 let scale = power_mod(self.beta, (power / EXTENSION_DEGREE) as u64, QUARTIC_Q);
-                result.coeffs[homogeneous_degree] = multiply_mod(
-                    blocks[raw_degree][slot],
-                    scale,
-                    QUARTIC_Q,
-                );
+                result.coeffs[homogeneous_degree] =
+                    multiply_mod(blocks[raw_degree][slot], scale, QUARTIC_Q);
             }
             result
         })
+    }
+
+    /// Convert the block-major output of four independent size-32 NTTs into
+    /// the common presentation `F_q[T]/(T^4-beta)` used by every CRT slot.
+    /// Both layouts store coefficient `degree` of slot `slot` at
+    /// `degree * SLOT_COUNT + slot`.
+    pub fn raw_ntt_layout_to_homogeneous(&self, raw: &[u64; RING_DEGREE]) -> [u64; RING_DEGREE] {
+        let mut homogeneous = [0u64; RING_DEGREE];
+        for raw_index in 0..RING_DEGREE {
+            homogeneous[self.raw_to_homogeneous_index[raw_index]] = multiply_mod(
+                raw[raw_index],
+                self.raw_to_homogeneous_scale[raw_index],
+                QUARTIC_Q,
+            );
+        }
+        homogeneous
+    }
+
+    /// Inverse of [`Self::raw_ntt_layout_to_homogeneous`].
+    pub fn homogeneous_to_raw_ntt_layout(
+        &self,
+        homogeneous: &[u64; RING_DEGREE],
+    ) -> [u64; RING_DEGREE] {
+        let mut raw = [0u64; RING_DEGREE];
+        for raw_index in 0..RING_DEGREE {
+            raw[raw_index] = multiply_mod(
+                homogeneous[self.raw_to_homogeneous_index[raw_index]],
+                self.homogeneous_to_raw_scale[raw_index],
+                QUARTIC_Q,
+            );
+        }
+        raw
+    }
+
+    pub fn multiply_homogeneous_layout(
+        &self,
+        lhs: &[u64; RING_DEGREE],
+        rhs: &[u64; RING_DEGREE],
+    ) -> [u64; RING_DEGREE] {
+        let mut result = [0u64; RING_DEGREE];
+        for slot in 0..SLOT_COUNT {
+            let lhs_slot = QuarticSlot {
+                coeffs: std::array::from_fn(|degree| lhs[degree * SLOT_COUNT + slot]),
+            };
+            let rhs_slot = QuarticSlot {
+                coeffs: std::array::from_fn(|degree| rhs[degree * SLOT_COUNT + slot]),
+            };
+            let product = lhs_slot.mul(&rhs_slot, self.beta);
+            for degree in 0..EXTENSION_DEGREE {
+                result[degree * SLOT_COUNT + slot] = product.coeffs[degree];
+            }
+        }
+        result
+    }
+
+    pub fn multiply_raw_ntt_layout(
+        &self,
+        lhs: &[u64; RING_DEGREE],
+        rhs: &[u64; RING_DEGREE],
+    ) -> [u64; RING_DEGREE] {
+        let lhs_homogeneous = self.raw_ntt_layout_to_homogeneous(lhs);
+        let rhs_homogeneous = self.raw_ntt_layout_to_homogeneous(rhs);
+        let product = self.multiply_homogeneous_layout(&lhs_homogeneous, &rhs_homogeneous);
+        self.homogeneous_to_raw_ntt_layout(&product)
+    }
+
+    pub fn inverse_homogeneous_layout(
+        &self,
+        value: &[u64; RING_DEGREE],
+    ) -> Option<[u64; RING_DEGREE]> {
+        let mut result = [0u64; RING_DEGREE];
+        for slot in 0..SLOT_COUNT {
+            let value_slot = QuarticSlot {
+                coeffs: std::array::from_fn(|degree| value[degree * SLOT_COUNT + slot]),
+            };
+            if value_slot == QuarticSlot::zero() {
+                return None;
+            }
+            let inverse = value_slot.inverse(self.beta);
+            for degree in 0..EXTENSION_DEGREE {
+                result[degree * SLOT_COUNT + slot] = inverse.coeffs[degree];
+            }
+        }
+        Some(result)
     }
 
     pub fn homogeneous_slots_to_coefficients(
@@ -188,16 +287,12 @@ impl QuarticTransform {
     ) -> [u64; RING_DEGREE] {
         let lhs_slots = self.coefficients_to_homogeneous_slots(lhs);
         let rhs_slots = self.coefficients_to_homogeneous_slots(rhs);
-        let product_slots = std::array::from_fn(|slot| {
-            lhs_slots[slot].mul(&rhs_slots[slot], self.beta)
-        });
+        let product_slots =
+            std::array::from_fn(|slot| lhs_slots[slot].mul(&rhs_slots[slot], self.beta));
         self.homogeneous_slots_to_coefficients(&product_slots)
     }
 
-    pub fn inverse(
-        &self,
-        value: &[u64; RING_DEGREE],
-    ) -> Option<[u64; RING_DEGREE]> {
+    pub fn inverse(&self, value: &[u64; RING_DEGREE]) -> Option<[u64; RING_DEGREE]> {
         let slots = self.coefficients_to_homogeneous_slots(value);
         if slots.iter().any(|slot| *slot == QuarticSlot::zero()) {
             return None;
@@ -233,6 +328,8 @@ pub fn naive_negacyclic_multiply(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(feature = "quartic-q")]
+    use crate::common::{hash::HashWrapper, ring_arithmetic::QuadraticExtension};
     use rand::{Rng, SeedableRng};
 
     fn random_coefficients(rng: &mut rand::rngs::StdRng) -> [u64; RING_DEGREE] {
@@ -247,6 +344,28 @@ mod tests {
             let input = random_coefficients(&mut rng);
             let slots = transform.coefficients_to_homogeneous_slots(&input);
             assert_eq!(transform.homogeneous_slots_to_coefficients(&slots), input);
+
+            let mut raw = [0u64; RING_DEGREE];
+            for residue in 0..EXTENSION_DEGREE {
+                for digit in 0..SLOT_COUNT {
+                    raw[residue * SLOT_COUNT + digit] = input[EXTENSION_DEGREE * digit + residue];
+                }
+                ntt_forward_in_place(
+                    &mut raw[residue * SLOT_COUNT..(residue + 1) * SLOT_COUNT],
+                    SLOT_COUNT,
+                    QUARTIC_Q,
+                );
+            }
+            let homogeneous = transform.raw_ntt_layout_to_homogeneous(&raw);
+            assert_eq!(transform.homogeneous_to_raw_ntt_layout(&homogeneous), raw);
+            for slot in 0..SLOT_COUNT {
+                for degree in 0..EXTENSION_DEGREE {
+                    assert_eq!(
+                        homogeneous[degree * SLOT_COUNT + slot],
+                        slots[slot].coeffs[degree]
+                    );
+                }
+            }
         }
     }
 
@@ -275,7 +394,9 @@ mod tests {
         };
         for _ in 0..16 {
             let value = random_coefficients(&mut rng);
-            let inverse = transform.inverse(&value).expect("random ring element is a unit");
+            let inverse = transform
+                .inverse(&value)
+                .expect("random ring element is a unit");
             assert_eq!(transform.multiply(&value, &inverse), one);
         }
     }
@@ -288,8 +409,54 @@ mod tests {
             .iter()
             .zip(transform.slot_exponents.iter())
         {
-            assert_eq!(*shift, power_mod(transform.beta, *exponent as u64, QUARTIC_Q));
+            assert_eq!(
+                *shift,
+                power_mod(transform.beta, *exponent as u64, QUARTIC_Q)
+            );
             assert_eq!(power_mod(*shift, 32, QUARTIC_Q), QUARTIC_Q - 1);
+        }
+    }
+
+    #[cfg(feature = "quartic-q")]
+    #[test]
+    fn quartic_extension_serialization_and_transcript_bind_all_limbs_in_order() {
+        let first = QuadraticExtension {
+            coeffs: [11, 22, 33, 44],
+        };
+        let second = QuadraticExtension {
+            coeffs: [55, 66, 77, 88],
+        };
+        assert_eq!(
+            QuadraticExtension::from_le_bytes(&first.to_le_bytes()),
+            Some(first)
+        );
+
+        let mut typed = HashWrapper::new();
+        typed.update_with_quadratic_extension_element(&first);
+        let mut canonical_bytes = HashWrapper::new();
+        canonical_bytes.update_with_bytes(&first.to_le_bytes());
+        assert_eq!(typed.sample_bytes(32), canonical_bytes.sample_bytes(32));
+
+        let mut ordered = HashWrapper::new();
+        ordered.update_with_quadratic_extension_element(&first);
+        ordered.update_with_quadratic_extension_element(&second);
+        let mut swapped = HashWrapper::new();
+        swapped.update_with_quadratic_extension_element(&second);
+        swapped.update_with_quadratic_extension_element(&first);
+        assert_ne!(ordered.sample_bytes(32), swapped.sample_bytes(32));
+
+        for degree in 0..EXTENSION_DEGREE {
+            let mut changed = first;
+            changed.coeffs[degree] += 1;
+            let mut original_transcript = HashWrapper::new();
+            original_transcript.update_with_quadratic_extension_element(&first);
+            let mut changed_transcript = HashWrapper::new();
+            changed_transcript.update_with_quadratic_extension_element(&changed);
+            assert_ne!(
+                original_transcript.sample_bytes(32),
+                changed_transcript.sample_bytes(32),
+                "extension coefficient {degree} was not transcript-bound"
+            );
         }
     }
 }

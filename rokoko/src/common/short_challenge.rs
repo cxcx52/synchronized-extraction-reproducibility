@@ -28,6 +28,11 @@ use crate::common::ring_arithmetic::{Representation, RingElement};
 use num::Complex;
 use std::sync::LazyLock;
 
+#[cfg(all(feature = "quartic-q", feature = "challenge-weight-34"))]
+compile_error!(
+    "quartic-q is certified only for exact weight 32; explicit weight-34 CRT collisions invalidate the exact-strong interface"
+);
+
 /// Baseline manuscript line: exact weight 32.  This meets a 128-bit
 /// two-star unit-loss target for L <= 8 in the interactive case (M = 1).
 ///

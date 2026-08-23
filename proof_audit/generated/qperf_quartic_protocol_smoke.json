@@ -1,0 +1,74 @@
+{
+  "status": "protocol smoke passed; completeness recalibration required",
+  "feature": "quartic-q",
+  "ordinary_test_run": {
+    "result": "158 passed, 1 failed, 2 ignored",
+    "elapsed_seconds": 894.40,
+    "failure_class": "old empirical completeness bound",
+    "label": "recomposed folded-witness norm claim via inner-product",
+    "observed": 28615442.005693953,
+    "old_bound": 28135160.575741395
+  },
+  "boundary_smoke": {
+    "environment": {
+      "ROKOKO_CALIBRATE_NORMS": "1"
+    },
+    "result": "1 passed, 0 failed",
+    "elapsed_seconds": 735.15,
+    "claim_boundary": "The environment flag logs and bypasses old empirical completeness assertions only. Algebraic prover/verifier checks remain active. Timings are regression observations, not publication benchmarks.",
+    "cut_3": {
+      "timing_ns": {
+        "crs": 10664494500,
+        "commit": 214040182900,
+        "prover": 84857091700,
+        "verifier": 62134700
+      },
+      "observed_norms": [
+        ["norm claim via inner-product", 13698250.59659101, 13977132.795685085],
+        ["most inner norm claim via inner-product", 3721.1433726745868, 3821.967493896305],
+        ["recomposed folded-witness norm claim via inner-product", 2689264.5102468072, 26887797.561018422],
+        ["norm claim via inner-product", 18057003.648501515, 28159240.91135979],
+        ["most inner norm claim via inner-product", 4550.939463451475, 4668.742123656007],
+        ["recomposed folded-witness norm claim via inner-product", 28615442.005693953, 28135160.575741395],
+        ["recomposed projection norm claim via inner-product", 11759308.639735756, 24440895.26806755],
+        ["norm claim via inner-product", 15959005.675586684, 29005254.275694836],
+        ["most inner norm claim via inner-product", 5251.276606692891, 5374.238681004036],
+        ["recomposed folded-witness norm claim via inner-product", 17721126.39504064, 29462743.34384635],
+        ["recomposed projection norm claim via inner-product", 19959003.077251527, 25405790.09411136]
+      ]
+    },
+    "cut_4": {
+      "timing_ns": {
+        "crs": 9795047000,
+        "commit": 236431763900,
+        "prover": 109248279600,
+        "verifier": 109867200
+      },
+      "observed_norms": [
+        ["norm claim via inner-product", 13694816.285649398, 13977132.795685085],
+        ["most inner norm claim via inner-product", 3730.636004758438, 3821.967493896305],
+        ["recomposed folded-witness norm claim via inner-product", 28351942.207404487, 26887797.561018422],
+        ["norm claim via inner-product", 14171169.12753648, 28159240.91135979],
+        ["most inner norm claim via inner-product", 4577.5145002501085, 4668.742123656007],
+        ["recomposed folded-witness norm claim via inner-product", 28493244.487092234, 28135160.575741395],
+        ["recomposed projection norm claim via inner-product", 3623963.4366490236, 24440895.26806755],
+        ["norm claim via inner-product", 13973942.475665806, 29005254.275694836],
+        ["most inner norm claim via inner-product", 5289.9845935503445, 5374.238681004036],
+        ["recomposed folded-witness norm claim via inner-product", 24821529.469141785, 29462743.34384635],
+        ["recomposed projection norm claim via inner-product", 28172654.079788435, 25405790.09411136],
+        ["norm claim via inner-product", 19920546.964015596, 22620389.486011393],
+        ["most inner norm claim via inner-product", 5224.50236864718, 5386.349686457425],
+        ["recomposed folded-witness norm claim via inner-product", 28624158.77693416, 30901226.835703418],
+        ["recomposed projection norm claim via inner-product", 29585823.923464935, 21517942.160508685]
+      ]
+    }
+  },
+  "default_quadratic_targeted_regression": {
+    "ring_arithmetic": "17 passed",
+    "hash": "11 passed",
+    "snark": "22 passed",
+    "sumcheck_utils": "24 passed",
+    "simple_verifier": "4 passed",
+    "projection": "4 passed"
+  }
+}

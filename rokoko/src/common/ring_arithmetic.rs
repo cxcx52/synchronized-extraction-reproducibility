@@ -6,13 +6,18 @@ use std::cell::RefCell;
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 use std::sync::LazyLock;
 
+#[cfg(feature = "quartic-q")]
+use crate::common::quartic_ring::QuarticTransform;
+
+#[cfg(feature = "quartic-q")]
+pub static QUARTIC_TRANSFORM: LazyLock<QuarticTransform> = LazyLock::new(QuarticTransform::new);
+
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum Representation {
     Coefficients, // This should not be used almost ever. Use only for printing or debugging.
-    EvenOddCoefficients, // In this representation, coefficients are stored as even part followed by odd part. This is so that NTT can be applied more easily.
-    IncompleteNTT, // Incomplete NTT representation, where even and odd parts are separately transformed.
-    HomogenizedFieldExtensions, // We use that reprentation so that "Incomplete NTT slots" are homogenized, i.e. they are all of
-                                // the structure Zq[X] / <X^2 + \alpha>, i.e. \alpha is the same for each slot.
+    EvenOddCoefficients, // Coefficients grouped by their residue modulo EXTENSION_DEGREE. Historical name retained for compatibility.
+    IncompleteNTT,       // Each residue block is transformed independently.
+    HomogenizedFieldExtensions, // All CRT slots use one common degree-EXTENSION_DEGREE field presentation.
 }
 
 // DO NOT derive Copy here, as RingElement is large.
@@ -167,8 +172,13 @@ impl RingElement {
         );
 
         unsafe {
-            ntt_forward_in_place(self.v.as_mut_ptr(), HALF_DEGREE, MOD_Q);
-            ntt_forward_in_place(self.v.as_mut_ptr().add(HALF_DEGREE), HALF_DEGREE, MOD_Q);
+            for residue in 0..EXTENSION_DEGREE {
+                ntt_forward_in_place(
+                    self.v.as_mut_ptr().add(residue * HALF_DEGREE),
+                    HALF_DEGREE,
+                    MOD_Q,
+                );
+            }
         }
 
         self.representation = Representation::IncompleteNTT;
@@ -181,8 +191,13 @@ impl RingElement {
         );
 
         unsafe {
-            ntt_inverse_in_place(self.v.as_mut_ptr(), HALF_DEGREE, MOD_Q);
-            ntt_inverse_in_place(self.v.as_mut_ptr().add(HALF_DEGREE), HALF_DEGREE, MOD_Q);
+            for residue in 0..EXTENSION_DEGREE {
+                ntt_inverse_in_place(
+                    self.v.as_mut_ptr().add(residue * HALF_DEGREE),
+                    HALF_DEGREE,
+                    MOD_Q,
+                );
+            }
         }
 
         self.representation = Representation::EvenOddCoefficients;
@@ -196,9 +211,10 @@ impl RingElement {
 
         let mut temp = [0u64; DEGREE];
 
-        for i in 0..(DEGREE / 2) {
-            temp[i] = self.v[2 * i];
-            temp[i + (DEGREE / 2)] = self.v[2 * i + 1];
+        for residue in 0..EXTENSION_DEGREE {
+            for digit in 0..HALF_DEGREE {
+                temp[residue * HALF_DEGREE + digit] = self.v[EXTENSION_DEGREE * digit + residue];
+            }
         }
 
         self.v = temp;
@@ -213,9 +229,10 @@ impl RingElement {
 
         let mut temp = [0u64; DEGREE];
 
-        for i in 0..(DEGREE / 2) {
-            temp[2 * i] = self.v[i];
-            temp[2 * i + 1] = self.v[i + (DEGREE / 2)];
+        for residue in 0..EXTENSION_DEGREE {
+            for digit in 0..HALF_DEGREE {
+                temp[EXTENSION_DEGREE * digit + residue] = self.v[residue * HALF_DEGREE + digit];
+            }
         }
 
         self.v = temp;
@@ -228,6 +245,11 @@ impl RingElement {
             "Not in Incomplete NTT representation"
         );
 
+        #[cfg(feature = "quartic-q")]
+        {
+            self.v = QUARTIC_TRANSFORM.raw_ntt_layout_to_homogeneous(&self.v);
+        }
+        #[cfg(not(feature = "quartic-q"))]
         unsafe {
             eltwise_mult_mod(
                 self.v.as_mut_ptr().add(HALF_DEGREE),
@@ -246,6 +268,11 @@ impl RingElement {
             "Not in Homogenized Field Extensions representation"
         );
 
+        #[cfg(feature = "quartic-q")]
+        {
+            self.v = QUARTIC_TRANSFORM.homogeneous_to_raw_ntt_layout(&self.v);
+        }
+        #[cfg(not(feature = "quartic-q"))]
         unsafe {
             eltwise_mult_mod(
                 self.v.as_mut_ptr().add(HALF_DEGREE),
@@ -317,11 +344,12 @@ impl RingElement {
             "RingElement not in Homogenized Field Extensions representation"
         );
 
-        let mut result = [QuadraticExtension { coeffs: [0u64; 2] }; HALF_DEGREE];
+        let mut result = [QuadraticExtension::zero(); HALF_DEGREE];
 
         for i in 0..HALF_DEGREE {
-            result[i].coeffs[0] = self.v[i];
-            result[i].coeffs[1] = self.v[i + HALF_DEGREE];
+            for coefficient in 0..EXTENSION_DEGREE {
+                result[i].coeffs[coefficient] = self.v[i + coefficient * HALF_DEGREE];
+            }
         }
 
         result
@@ -337,8 +365,9 @@ impl RingElement {
         );
 
         for i in 0..HALF_DEGREE {
-            self.v[i] = extensions[i].coeffs[0];
-            self.v[i + HALF_DEGREE] = extensions[i].coeffs[1];
+            for coefficient in 0..EXTENSION_DEGREE {
+                self.v[i + coefficient * HALF_DEGREE] = extensions[i].coeffs[coefficient];
+            }
         }
     }
 
@@ -358,8 +387,12 @@ impl RingElement {
         // Reverse and negate coefficients 1 to n-1
         for i in 1..(DEGREE / 2 + 1) {
             let temp = self.v[i];
-            self.v[i] = MOD_Q - self.v[DEGREE - i];
-            self.v[DEGREE - i] = MOD_Q - temp;
+            self.v[i] = if self.v[DEGREE - i] == 0 {
+                0
+            } else {
+                MOD_Q - self.v[DEGREE - i]
+            };
+            self.v[DEGREE - i] = if temp == 0 { 0 } else { MOD_Q - temp };
         }
 
         self.from_coefficients_to_even_odd_coefficients();
@@ -418,27 +451,42 @@ impl RingElement {
 
         debug_assert_eq!(self.representation, Representation::IncompleteNTT);
 
-        let transform = &*CONJUGATION_NTT_TRANSFORM;
-        let mut temp = [0u64; DEGREE];
-
-        // Apply even part permutation
-        for i in 0..HALF_DEGREE {
-            temp[transform.even_permutation[i]] = self.v[i];
+        #[cfg(feature = "quartic-q")]
+        {
+            let transform = &*QUARTIC_CONJUGATION_NTT_TRANSFORM;
+            let mut result = [0u64; DEGREE];
+            for source in 0..DEGREE {
+                result[transform.permutation[source]] =
+                    unsafe { multiply_mod(self.v[source], transform.factors[source], MOD_Q) };
+            }
+            self.v = result;
+            return;
         }
-        self.v[..HALF_DEGREE].copy_from_slice(&temp[..HALF_DEGREE]);
 
-        // Apply odd part: multiply by factors, then permute
-        unsafe {
-            eltwise_mult_mod(
-                temp.as_mut_ptr(),
-                self.v.as_ptr().add(HALF_DEGREE),
-                transform.odd_factors.as_ptr(),
-                HALF_DEGREE as u64,
-                MOD_Q,
-            );
-        }
-        for i in 0..HALF_DEGREE {
-            self.v[HALF_DEGREE + transform.odd_permutation[i]] = temp[i];
+        #[cfg(not(feature = "quartic-q"))]
+        {
+            let transform = &*CONJUGATION_NTT_TRANSFORM;
+            let mut temp = [0u64; DEGREE];
+
+            // Apply even part permutation
+            for i in 0..HALF_DEGREE {
+                temp[transform.even_permutation[i]] = self.v[i];
+            }
+            self.v[..HALF_DEGREE].copy_from_slice(&temp[..HALF_DEGREE]);
+
+            // Apply odd part: multiply by factors, then permute
+            unsafe {
+                eltwise_mult_mod(
+                    temp.as_mut_ptr(),
+                    self.v.as_ptr().add(HALF_DEGREE),
+                    transform.odd_factors.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+            }
+            for i in 0..HALF_DEGREE {
+                self.v[HALF_DEGREE + transform.odd_permutation[i]] = temp[i];
+            }
         }
     }
 
@@ -447,23 +495,36 @@ impl RingElement {
         debug_assert_eq!(self.representation, Representation::IncompleteNTT);
         result.representation = self.representation;
 
-        let transform = &*CONJUGATION_NTT_TRANSFORM;
-        let mut temp = [0u64; DEGREE];
-        for i in 0..HALF_DEGREE {
-            temp[transform.even_permutation[i]] = self.v[i];
+        #[cfg(feature = "quartic-q")]
+        {
+            let transform = &*QUARTIC_CONJUGATION_NTT_TRANSFORM;
+            for source in 0..DEGREE {
+                result.v[transform.permutation[source]] =
+                    unsafe { multiply_mod(self.v[source], transform.factors[source], MOD_Q) };
+            }
+            return;
         }
-        result.v[..HALF_DEGREE].copy_from_slice(&temp[..HALF_DEGREE]);
-        unsafe {
-            eltwise_mult_mod(
-                temp.as_mut_ptr(),
-                self.v.as_ptr().add(HALF_DEGREE),
-                transform.odd_factors.as_ptr(),
-                HALF_DEGREE as u64,
-                MOD_Q,
-            );
-        }
-        for i in 0..HALF_DEGREE {
-            result.v[HALF_DEGREE + transform.odd_permutation[i]] = temp[i];
+
+        #[cfg(not(feature = "quartic-q"))]
+        {
+            let transform = &*CONJUGATION_NTT_TRANSFORM;
+            let mut temp = [0u64; DEGREE];
+            for i in 0..HALF_DEGREE {
+                temp[transform.even_permutation[i]] = self.v[i];
+            }
+            result.v[..HALF_DEGREE].copy_from_slice(&temp[..HALF_DEGREE]);
+            unsafe {
+                eltwise_mult_mod(
+                    temp.as_mut_ptr(),
+                    self.v.as_ptr().add(HALF_DEGREE),
+                    transform.odd_factors.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+            }
+            for i in 0..HALF_DEGREE {
+                result.v[HALF_DEGREE + transform.odd_permutation[i]] = temp[i];
+            }
         }
     }
 
@@ -485,120 +546,124 @@ impl RingElement {
             Representation::HomogenizedFieldExtensions
         );
 
-        // Each slot is Z_q[X]/(X^2 - beta) where beta = FIELD_SHIFT_FACTOR.
-        // Slot i represents a_i + b_i*X with a_i = v[i], b_i = v[i + HALF_DEGREE].
-        // Inverse: (a + bX)^{-1} = (a - bX) / (a^2 - beta * b^2)
-        //
-        // We use Montgomery's batch inversion trick to compute all norm inverses
-        // with a single inv_mod call.
-
-        let beta = *FIELD_SHIFT_FACTOR;
-        let mut result = RingElement::new(Representation::HomogenizedFieldExtensions);
-
-        // Step 1: Compute norms n_i = a_i^2 - beta * b_i^2
-        let mut norms = [0u64; HALF_DEGREE];
-        let mut temp = [0u64; HALF_DEGREE];
-
-        unsafe {
-            // norms[i] = a_i^2
-            eltwise_mult_mod(
-                norms.as_mut_ptr(),
-                self.v.as_ptr(),
-                self.v.as_ptr(),
-                HALF_DEGREE as u64,
-                MOD_Q,
-            );
-
-            // temp[i] = b_i^2
-            eltwise_mult_mod(
-                temp.as_mut_ptr(),
-                self.v.as_ptr().add(HALF_DEGREE),
-                self.v.as_ptr().add(HALF_DEGREE),
-                HALF_DEGREE as u64,
-                MOD_Q,
-            );
-
-            // norms[i] = -beta * b_i^2 + a_i^2
-            eltwise_fma_mod(
-                norms.as_mut_ptr(),
-                temp.as_ptr(),
-                MOD_Q - beta,
-                norms.as_ptr(),
-                HALF_DEGREE as u64,
-                MOD_Q,
-            );
+        #[cfg(feature = "quartic-q")]
+        {
+            return RingElement {
+                v: QUARTIC_TRANSFORM
+                    .inverse_homogeneous_layout(&self.v)
+                    .expect("cannot invert a ring element with a zero CRT slot"),
+                representation: Representation::HomogenizedFieldExtensions,
+            };
         }
 
-        // Step 2: Montgomery batch inversion of norms
-        let mut prefix_products = [0u64; HALF_DEGREE];
-        prefix_products[0] = norms[0];
-        for i in 1..HALF_DEGREE {
-            prefix_products[i] = unsafe { multiply_mod(prefix_products[i - 1], norms[i], MOD_Q) };
+        #[cfg(not(feature = "quartic-q"))]
+        {
+            // Each default slot is Z_q[X]/(X^2 - beta).  Montgomery batch
+            // inversion computes all slot-norm inverses with one base-field
+            // inversion.
+            let beta = *FIELD_SHIFT_FACTOR;
+            let mut result = RingElement::new(Representation::HomogenizedFieldExtensions);
+            let mut norms = [0u64; HALF_DEGREE];
+            let mut temp = [0u64; HALF_DEGREE];
+
+            unsafe {
+                eltwise_mult_mod(
+                    norms.as_mut_ptr(),
+                    self.v.as_ptr(),
+                    self.v.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+                eltwise_mult_mod(
+                    temp.as_mut_ptr(),
+                    self.v.as_ptr().add(HALF_DEGREE),
+                    self.v.as_ptr().add(HALF_DEGREE),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+                eltwise_fma_mod(
+                    norms.as_mut_ptr(),
+                    temp.as_ptr(),
+                    MOD_Q - beta,
+                    norms.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+            }
+
+            let mut prefix_products = [0u64; HALF_DEGREE];
+            prefix_products[0] = norms[0];
+            for i in 1..HALF_DEGREE {
+                prefix_products[i] =
+                    unsafe { multiply_mod(prefix_products[i - 1], norms[i], MOD_Q) };
+            }
+            let mut inv = unsafe { inv_mod(prefix_products[HALF_DEGREE - 1], MOD_Q) };
+            let mut norm_inverses = [0u64; HALF_DEGREE];
+            for i in (1..HALF_DEGREE).rev() {
+                norm_inverses[i] = unsafe { multiply_mod(inv, prefix_products[i - 1], MOD_Q) };
+                inv = unsafe { multiply_mod(inv, norms[i], MOD_Q) };
+            }
+            norm_inverses[0] = inv;
+
+            unsafe {
+                eltwise_mult_mod(
+                    result.v.as_mut_ptr(),
+                    self.v.as_ptr(),
+                    norm_inverses.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+                eltwise_mult_mod(
+                    result.v.as_mut_ptr().add(HALF_DEGREE),
+                    self.v.as_ptr().add(HALF_DEGREE),
+                    norm_inverses.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+                temp.fill(0);
+                eltwise_sub_mod(
+                    result.v.as_mut_ptr().add(HALF_DEGREE),
+                    temp.as_ptr(),
+                    result.v.as_ptr().add(HALF_DEGREE),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+            }
+            result
         }
-
-        let mut inv = unsafe { inv_mod(prefix_products[HALF_DEGREE - 1], MOD_Q) };
-
-        let mut norm_inverses = [0u64; HALF_DEGREE];
-        for i in (1..HALF_DEGREE).rev() {
-            norm_inverses[i] = unsafe { multiply_mod(inv, prefix_products[i - 1], MOD_Q) };
-            inv = unsafe { multiply_mod(inv, norms[i], MOD_Q) };
-        }
-        norm_inverses[0] = inv;
-
-        // Step 3: result = (a - bX) * n^{-1}
-        // result_even[i] = a_i * n_i^{-1}
-        // result_odd[i]  = -b_i * n_i^{-1}
-        unsafe {
-            eltwise_mult_mod(
-                result.v.as_mut_ptr(),
-                self.v.as_ptr(),
-                norm_inverses.as_ptr(),
-                HALF_DEGREE as u64,
-                MOD_Q,
-            );
-
-            eltwise_mult_mod(
-                result.v.as_mut_ptr().add(HALF_DEGREE),
-                self.v.as_ptr().add(HALF_DEGREE),
-                norm_inverses.as_ptr(),
-                HALF_DEGREE as u64,
-                MOD_Q,
-            );
-
-            // Negate the odd part: result_odd = 0 - result_odd
-            temp.fill(0);
-            eltwise_sub_mod(
-                result.v.as_mut_ptr().add(HALF_DEGREE),
-                temp.as_ptr(),
-                result.v.as_ptr().add(HALF_DEGREE),
-                HALF_DEGREE as u64,
-                MOD_Q,
-            );
-        }
-
-        result
     }
 
     pub fn constant_term_from_incomplete_ntt(&self) -> u64 {
         debug_assert_eq!(self.representation, Representation::IncompleteNTT);
-        let mut buf = [0u64; DEGREE];
-        buf.copy_from_slice(&self.v);
-        unsafe {
-            eltwise_mult_mod(
-                buf.as_mut_ptr(),
-                self.v.as_ptr(),
-                CONSTANT_TERM_FACTORS.as_ptr(),
-                HALF_DEGREE as u64,
-                MOD_Q,
-            );
-        }
-        let mut sum = 0u64;
-        for i in 0..HALF_DEGREE {
-            sum += buf[i];
+        #[cfg(feature = "quartic-q")]
+        {
+            let mut coefficients = self.clone();
+            coefficients.from_incomplete_ntt_to_even_odd_coefficients();
+            coefficients.from_even_odd_coefficients_to_coefficients();
+            return coefficients.v[0];
         }
 
-        // we call it once so it's probably fine
-        sum % MOD_Q
+        #[cfg(not(feature = "quartic-q"))]
+        {
+            let mut buf = [0u64; DEGREE];
+            buf.copy_from_slice(&self.v);
+            unsafe {
+                eltwise_mult_mod(
+                    buf.as_mut_ptr(),
+                    self.v.as_ptr(),
+                    CONSTANT_TERM_FACTORS.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+            }
+            let mut sum = 0u64;
+            for i in 0..HALF_DEGREE {
+                sum += buf[i];
+            }
+
+            // we call it once so it's probably fine
+            sum % MOD_Q
+        }
     }
 }
 
@@ -633,11 +698,58 @@ pub static TWO_INV_HALF_DEGREE: LazyLock<u64> =
 pub static CONJUGATION_NTT_TRANSFORM: LazyLock<ConjugationTransform> =
     LazyLock::new(|| derive_conjugation_transform());
 
+#[cfg(feature = "quartic-q")]
+pub static QUARTIC_CONJUGATION_NTT_TRANSFORM: LazyLock<QuarticConjugationTransform> =
+    LazyLock::new(derive_quartic_conjugation_transform);
+
 #[derive(Clone, Debug)]
 pub struct ConjugationTransform {
     pub even_permutation: [usize; HALF_DEGREE],
     pub odd_permutation: [usize; HALF_DEGREE],
     pub odd_factors: [u64; HALF_DEGREE],
+}
+
+#[cfg(feature = "quartic-q")]
+#[derive(Clone, Debug)]
+pub struct QuarticConjugationTransform {
+    pub permutation: [usize; DEGREE],
+    pub factors: [u64; DEGREE],
+}
+
+#[cfg(feature = "quartic-q")]
+fn derive_quartic_conjugation_transform() -> QuarticConjugationTransform {
+    let mut permutation = [0usize; DEGREE];
+    let mut factors = [0u64; DEGREE];
+    let mut seen_destinations = [false; DEGREE];
+
+    for source in 0..DEGREE {
+        let mut basis = RingElement::new(Representation::IncompleteNTT);
+        basis.v[source] = 1;
+        basis.conjugate_in_place_ref();
+
+        let mut nonzero = basis
+            .v
+            .iter()
+            .copied()
+            .enumerate()
+            .filter(|(_, value)| *value != 0);
+        let (destination, factor) = nonzero
+            .next()
+            .expect("quartic NTT conjugation must map a basis vector nontrivially");
+        assert!(
+            nonzero.next().is_none(),
+            "quartic NTT conjugation must be monomial"
+        );
+        assert!(!seen_destinations[destination]);
+        seen_destinations[destination] = true;
+        permutation[source] = destination;
+        factors[source] = factor;
+    }
+    assert!(seen_destinations.into_iter().all(|seen| seen));
+    QuarticConjugationTransform {
+        permutation,
+        factors,
+    }
 }
 
 /// Empirically derive the conjugation transformation in NTT domain
@@ -823,17 +935,27 @@ pub fn incomplete_ntt_multiplication_in_place(result: &mut RingElement, operand:
         "Result not in Incomplete NTT representation"
     );
 
-    // The fused AVX512 kernel loads all inputs into registers before any store
-    // within each 8-element iteration, so result can safely alias operand1.
-    unsafe {
-        fused_incomplete_ntt_mult(
-            result.v.as_mut_ptr(),
-            result.v.as_ptr(),
-            operand.v.as_ptr(),
-            SHIFT_FACTORS.as_ptr(),
-            HALF_DEGREE,
-            MOD_Q,
-        );
+    #[cfg(feature = "quartic-q")]
+    {
+        let lhs = result.clone();
+        incomplete_ntt_multiplication_inner(result, &lhs, operand, false);
+        return;
+    }
+
+    #[cfg(not(feature = "quartic-q"))]
+    {
+        // The fused AVX512 kernel loads all inputs into registers before any
+        // store within each 8-element iteration, so result can alias operand1.
+        unsafe {
+            fused_incomplete_ntt_mult(
+                result.v.as_mut_ptr(),
+                result.v.as_ptr(),
+                operand.v.as_ptr(),
+                SHIFT_FACTORS.as_ptr(),
+                HALF_DEGREE,
+                MOD_Q,
+            );
+        }
     }
 }
 
@@ -864,126 +986,69 @@ pub fn incomplete_ntt_multiplication_inner(
     operand2: &RingElement,
     homogenized: bool,
 ) {
-    let op1_data = &operand1.v;
-    let op2_data = &operand2.v;
-
-    if !homogenized {
-        // Fused path: all 5 mults + 2 adds in a single AVX512 pass.
-        // Eliminates per-call dispatch overhead, redundant int↔float
-        // conversions, and intermediate memory traffic.
-        unsafe {
-            fused_incomplete_ntt_mult(
-                result.v.as_mut_ptr(),
-                op1_data.as_ptr(),
-                op2_data.as_ptr(),
-                SHIFT_FACTORS.as_ptr(),
-                HALF_DEGREE,
-                MOD_Q,
-            );
-        }
+    #[cfg(feature = "quartic-q")]
+    {
+        result.v = if homogenized {
+            QUARTIC_TRANSFORM.multiply_homogeneous_layout(&operand1.v, &operand2.v)
+        } else {
+            QUARTIC_TRANSFORM.multiply_raw_ntt_layout(&operand1.v, &operand2.v)
+        };
         return;
     }
 
-    // Homogenized path: keep original separate-call implementation
-    let mut temp = [0u64; DEGREE];
+    #[cfg(not(feature = "quartic-q"))]
+    {
+        let op1_data = &operand1.v;
+        let op2_data = &operand2.v;
 
-    unsafe {
-        // result_even = op1_even * op2_even
-        eltwise_mult_mod(
-            result.v.as_mut_ptr(),
-            op1_data.as_ptr(),
-            op2_data.as_ptr(),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
+        if !homogenized {
+            // Fused path: all 5 mults + 2 adds in a single AVX512 pass.
+            // Eliminates per-call dispatch overhead, redundant int↔float
+            // conversions, and intermediate memory traffic.
+            unsafe {
+                fused_incomplete_ntt_mult(
+                    result.v.as_mut_ptr(),
+                    op1_data.as_ptr(),
+                    op2_data.as_ptr(),
+                    SHIFT_FACTORS.as_ptr(),
+                    HALF_DEGREE,
+                    MOD_Q,
+                );
+            }
+            return;
+        }
 
-        // result_odd = op1_odd * op2_even
-        eltwise_mult_mod(
-            result.v.as_mut_ptr().add(HALF_DEGREE),
-            op1_data.as_ptr().add(HALF_DEGREE),
-            op2_data.as_ptr(),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
+        // Homogenized path: keep original separate-call implementation
+        let mut temp = [0u64; DEGREE];
 
-        // temp = op1_odd * op2_odd
-        eltwise_mult_mod(
-            temp.as_mut_ptr(),
-            op1_data.as_ptr().add(HALF_DEGREE),
-            op2_data.as_ptr().add(HALF_DEGREE),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
+        unsafe {
+            // result_even = op1_even * op2_even
+            eltwise_mult_mod(
+                result.v.as_mut_ptr(),
+                op1_data.as_ptr(),
+                op2_data.as_ptr(),
+                HALF_DEGREE as u64,
+                MOD_Q,
+            );
 
-        // result_even += temp * SHIFT_FACTORS[0]
-        eltwise_fma_mod(
-            result.v.as_mut_ptr(),
-            temp.as_ptr(),
-            SHIFT_FACTORS[0],
-            result.v.as_ptr(),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
+            // result_odd = op1_odd * op2_even
+            eltwise_mult_mod(
+                result.v.as_mut_ptr().add(HALF_DEGREE),
+                op1_data.as_ptr().add(HALF_DEGREE),
+                op2_data.as_ptr(),
+                HALF_DEGREE as u64,
+                MOD_Q,
+            );
 
-        // Reuse temp for op1_even * op2_odd
-        eltwise_mult_mod(
-            temp.as_mut_ptr(),
-            op1_data.as_ptr(),
-            op2_data.as_ptr().add(HALF_DEGREE),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
+            // temp = op1_odd * op2_odd
+            eltwise_mult_mod(
+                temp.as_mut_ptr(),
+                op1_data.as_ptr().add(HALF_DEGREE),
+                op2_data.as_ptr().add(HALF_DEGREE),
+                HALF_DEGREE as u64,
+                MOD_Q,
+            );
 
-        // result_odd += temp
-        eltwise_add_mod(
-            result.v.as_mut_ptr().add(HALF_DEGREE),
-            result.v.as_ptr().add(HALF_DEGREE),
-            temp.as_ptr(),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
-    }
-}
-
-#[inline(always)]
-pub fn incomplete_ntt_multiplication_in_place_inner(
-    result: &mut RingElement,
-    operand1: &RingElement,
-    homogenized: bool,
-) {
-    let mut temp = [0u64; DEGREE];
-
-    let op1_data = &operand1.v;
-
-    unsafe {
-        // result_even = op1_even * op2_even
-        eltwise_mult_mod(
-            result.v.as_mut_ptr(),
-            op1_data.as_ptr(),
-            result.v.as_ptr(),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
-
-        // result_odd = op1_odd * op2_even
-        eltwise_mult_mod(
-            result.v.as_mut_ptr().add(HALF_DEGREE),
-            op1_data.as_ptr().add(HALF_DEGREE),
-            result.v.as_ptr(),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
-
-        // temp = op1_odd * op2_odd
-        eltwise_mult_mod(
-            temp.as_mut_ptr(),
-            op1_data.as_ptr().add(HALF_DEGREE),
-            result.v.as_ptr().add(HALF_DEGREE),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
-
-        if homogenized {
             // result_even += temp * SHIFT_FACTORS[0]
             eltwise_fma_mod(
                 result.v.as_mut_ptr(),
@@ -993,43 +1058,123 @@ pub fn incomplete_ntt_multiplication_in_place_inner(
                 HALF_DEGREE as u64,
                 MOD_Q,
             );
-        } else {
-            // Apply shift factors
+
+            // Reuse temp for op1_even * op2_odd
             eltwise_mult_mod(
                 temp.as_mut_ptr(),
-                temp.as_ptr(),
-                SHIFT_FACTORS.as_ptr(),
+                op1_data.as_ptr(),
+                op2_data.as_ptr().add(HALF_DEGREE),
                 HALF_DEGREE as u64,
                 MOD_Q,
             );
 
-            // result_even += temp
+            // result_odd += temp
             eltwise_add_mod(
-                result.v.as_mut_ptr(),
-                result.v.as_ptr(),
+                result.v.as_mut_ptr().add(HALF_DEGREE),
+                result.v.as_ptr().add(HALF_DEGREE),
                 temp.as_ptr(),
                 HALF_DEGREE as u64,
                 MOD_Q,
             );
         }
+    }
+}
 
-        // Reuse temp for op1_even * op2_odd
-        eltwise_mult_mod(
-            temp.as_mut_ptr(),
-            op1_data.as_ptr(),
-            result.v.as_ptr().add(HALF_DEGREE),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
+#[inline(always)]
+pub fn incomplete_ntt_multiplication_in_place_inner(
+    result: &mut RingElement,
+    operand1: &RingElement,
+    homogenized: bool,
+) {
+    #[cfg(feature = "quartic-q")]
+    {
+        let rhs = result.clone();
+        incomplete_ntt_multiplication_inner(result, operand1, &rhs, homogenized);
+        return;
+    }
 
-        // result_odd += temp
-        eltwise_add_mod(
-            result.v.as_mut_ptr().add(HALF_DEGREE),
-            result.v.as_ptr().add(HALF_DEGREE),
-            temp.as_ptr(),
-            HALF_DEGREE as u64,
-            MOD_Q,
-        );
+    #[cfg(not(feature = "quartic-q"))]
+    {
+        let mut temp = [0u64; DEGREE];
+
+        let op1_data = &operand1.v;
+
+        unsafe {
+            // result_even = op1_even * op2_even
+            eltwise_mult_mod(
+                result.v.as_mut_ptr(),
+                op1_data.as_ptr(),
+                result.v.as_ptr(),
+                HALF_DEGREE as u64,
+                MOD_Q,
+            );
+
+            // result_odd = op1_odd * op2_even
+            eltwise_mult_mod(
+                result.v.as_mut_ptr().add(HALF_DEGREE),
+                op1_data.as_ptr().add(HALF_DEGREE),
+                result.v.as_ptr(),
+                HALF_DEGREE as u64,
+                MOD_Q,
+            );
+
+            // temp = op1_odd * op2_odd
+            eltwise_mult_mod(
+                temp.as_mut_ptr(),
+                op1_data.as_ptr().add(HALF_DEGREE),
+                result.v.as_ptr().add(HALF_DEGREE),
+                HALF_DEGREE as u64,
+                MOD_Q,
+            );
+
+            if homogenized {
+                // result_even += temp * SHIFT_FACTORS[0]
+                eltwise_fma_mod(
+                    result.v.as_mut_ptr(),
+                    temp.as_ptr(),
+                    SHIFT_FACTORS[0],
+                    result.v.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+            } else {
+                // Apply shift factors
+                eltwise_mult_mod(
+                    temp.as_mut_ptr(),
+                    temp.as_ptr(),
+                    SHIFT_FACTORS.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+
+                // result_even += temp
+                eltwise_add_mod(
+                    result.v.as_mut_ptr(),
+                    result.v.as_ptr(),
+                    temp.as_ptr(),
+                    HALF_DEGREE as u64,
+                    MOD_Q,
+                );
+            }
+
+            // Reuse temp for op1_even * op2_odd
+            eltwise_mult_mod(
+                temp.as_mut_ptr(),
+                op1_data.as_ptr(),
+                result.v.as_ptr().add(HALF_DEGREE),
+                HALF_DEGREE as u64,
+                MOD_Q,
+            );
+
+            // result_odd += temp
+            eltwise_add_mod(
+                result.v.as_mut_ptr().add(HALF_DEGREE),
+                result.v.as_ptr().add(HALF_DEGREE),
+                temp.as_ptr(),
+                HALF_DEGREE as u64,
+                MOD_Q,
+            );
+        }
     }
 }
 
@@ -1181,19 +1326,92 @@ impl MulAssign<(&RingElement, &RingElement)> for RingElement {
 // They are small so we can store them on stack.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct QuadraticExtension {
-    pub coeffs: [u64; 2],
+    pub coeffs: [u64; EXTENSION_DEGREE],
+}
+
+impl QuadraticExtension {
+    pub const fn zero() -> Self {
+        Self {
+            coeffs: [0; EXTENSION_DEGREE],
+        }
+    }
+
+    pub const fn one() -> Self {
+        let mut coeffs = [0; EXTENSION_DEGREE];
+        coeffs[0] = 1;
+        Self { coeffs }
+    }
+
+    pub const fn from_base(value: u64) -> Self {
+        let mut coeffs = [0; EXTENSION_DEGREE];
+        coeffs[0] = value;
+        Self { coeffs }
+    }
+
+    pub const fn from_pair(constant: u64, linear: u64) -> Self {
+        let mut coeffs = [0; EXTENSION_DEGREE];
+        coeffs[0] = constant;
+        coeffs[1] = linear;
+        Self { coeffs }
+    }
+
+    /// Canonical little-endian encoding of all extension coefficients in
+    /// increasing basis degree.  The historical type name is retained, but
+    /// the encoded length follows `EXTENSION_DEGREE`.
+    pub fn to_le_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(EXTENSION_DEGREE * size_of::<u64>());
+        for coefficient in self.coeffs {
+            bytes.extend_from_slice(&coefficient.to_le_bytes());
+        }
+        bytes
+    }
+
+    /// Decode the canonical extension representation, rejecting wrong
+    /// lengths and non-canonical base-field representatives.
+    pub fn from_le_bytes(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() != EXTENSION_DEGREE * size_of::<u64>() {
+            return None;
+        }
+        let mut result = Self::zero();
+        for (index, chunk) in bytes.chunks_exact(size_of::<u64>()).enumerate() {
+            let coefficient = u64::from_le_bytes(chunk.try_into().ok()?);
+            if coefficient >= MOD_Q {
+                return None;
+            }
+            result.coeffs[index] = coefficient;
+        }
+        Some(result)
+    }
+
+    fn multiply(&self, other: &Self) -> Self {
+        let mut convolution = [0u64; 2 * EXTENSION_DEGREE - 1];
+        for left_degree in 0..EXTENSION_DEGREE {
+            for right_degree in 0..EXTENSION_DEGREE {
+                let index = left_degree + right_degree;
+                let product = unsafe {
+                    multiply_mod(self.coeffs[left_degree], other.coeffs[right_degree], MOD_Q)
+                };
+                convolution[index] = unsafe { add_mod(convolution[index], product, MOD_Q) };
+            }
+        }
+        for index in (EXTENSION_DEGREE..convolution.len()).rev() {
+            let reduced = unsafe { multiply_mod(convolution[index], *FIELD_SHIFT_FACTOR, MOD_Q) };
+            convolution[index - EXTENSION_DEGREE] =
+                unsafe { add_mod(convolution[index - EXTENSION_DEGREE], reduced, MOD_Q) };
+        }
+        Self {
+            coeffs: convolution[..EXTENSION_DEGREE].try_into().unwrap(),
+        }
+    }
 }
 
 impl Add for QuadraticExtension {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        let coeffs = unsafe {
-            [
-                add_mod(self.coeffs[0], other.coeffs[0], MOD_Q as u64),
-                add_mod(self.coeffs[1], other.coeffs[1], MOD_Q as u64),
-            ]
-        };
+        let coeffs = std::array::from_fn(|index| unsafe {
+            add_mod(self.coeffs[index], other.coeffs[index], MOD_Q)
+        });
         Self { coeffs }
     }
 }
@@ -1202,38 +1420,14 @@ impl Mul for QuadraticExtension {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self {
-        let a = self.coeffs[0];
-        let b = self.coeffs[1];
-        let c = other.coeffs[0];
-        let d = other.coeffs[1];
-
-        let coeffs = unsafe {
-            [
-                add_mod(
-                    multiply_mod(a, c, MOD_Q as u64),
-                    multiply_mod(
-                        *FIELD_SHIFT_FACTOR,
-                        multiply_mod(b, d, MOD_Q as u64),
-                        MOD_Q as u64,
-                    ),
-                    MOD_Q as u64,
-                ),
-                add_mod(
-                    multiply_mod(a, d, MOD_Q as u64),
-                    multiply_mod(b, c, MOD_Q as u64),
-                    MOD_Q as u64,
-                ),
-            ]
-        };
-        Self { coeffs }
+        self.multiply(&other)
     }
 }
 
 impl<'a> AddAssign<&'a QuadraticExtension> for QuadraticExtension {
     fn add_assign(&mut self, other: &'a QuadraticExtension) {
-        unsafe {
-            self.coeffs[0] = add_mod(self.coeffs[0], other.coeffs[0], MOD_Q);
-            self.coeffs[1] = add_mod(self.coeffs[1], other.coeffs[1], MOD_Q);
+        for index in 0..EXTENSION_DEGREE {
+            self.coeffs[index] = unsafe { add_mod(self.coeffs[index], other.coeffs[index], MOD_Q) };
         }
     }
 }
@@ -1241,33 +1435,22 @@ impl<'a> AddAssign<&'a QuadraticExtension> for QuadraticExtension {
 impl<'a> AddAssign<(&'a QuadraticExtension, &'a QuadraticExtension)> for QuadraticExtension {
     fn add_assign(&mut self, other: (&'a QuadraticExtension, &'a QuadraticExtension)) {
         let (op1, op2) = other;
-        self.coeffs[0] = unsafe { add_mod(op1.coeffs[0], op2.coeffs[0], MOD_Q) };
-        self.coeffs[1] = unsafe { add_mod(op1.coeffs[1], op2.coeffs[1], MOD_Q) };
+        for index in 0..EXTENSION_DEGREE {
+            self.coeffs[index] = unsafe { add_mod(op1.coeffs[index], op2.coeffs[index], MOD_Q) };
+        }
     }
 }
 impl<'a> SubAssign<&'a QuadraticExtension> for QuadraticExtension {
     fn sub_assign(&mut self, other: &'a QuadraticExtension) {
-        unsafe {
-            self.coeffs[0] = sub_mod(self.coeffs[0], other.coeffs[0], MOD_Q);
-            self.coeffs[1] = sub_mod(self.coeffs[1], other.coeffs[1], MOD_Q);
+        for index in 0..EXTENSION_DEGREE {
+            self.coeffs[index] = unsafe { sub_mod(self.coeffs[index], other.coeffs[index], MOD_Q) };
         }
     }
 }
 
 impl<'a> MulAssign<&'a QuadraticExtension> for QuadraticExtension {
     fn mul_assign(&mut self, other: &'a QuadraticExtension) {
-        let a = self.coeffs[0];
-        let b = self.coeffs[1];
-        let c = other.coeffs[0];
-        let d = other.coeffs[1];
-        unsafe {
-            self.coeffs[0] = add_mod(
-                multiply_mod(a, c, MOD_Q),
-                multiply_mod(*FIELD_SHIFT_FACTOR, multiply_mod(b, d, MOD_Q), MOD_Q),
-                MOD_Q,
-            );
-            self.coeffs[1] = add_mod(multiply_mod(a, d, MOD_Q), multiply_mod(b, c, MOD_Q), MOD_Q);
-        }
+        *self = self.multiply(other);
     }
 }
 
@@ -1462,23 +1645,47 @@ mod tests {
 
     #[test]
     fn test_quadratic_extension_multiplication() {
-        let qe1 = QuadraticExtension { coeffs: [2, 3] };
-        let qe2 = QuadraticExtension { coeffs: [4, 5] };
+        let qe1 = QuadraticExtension::from_pair(2, 3);
+        let qe2 = QuadraticExtension::from_pair(4, 5);
         let result = qe1 * qe2;
 
-        // (2 + 3X)(4 + 5X) = 8 + 10X + 12X + 15X^2 = 8 + 22X + 15*shift
-        let expected_c0 = unsafe {
-            add_mod(
-                multiply_mod(2, 4, MOD_Q),
-                multiply_mod(*FIELD_SHIFT_FACTOR, multiply_mod(3, 5, MOD_Q), MOD_Q),
-                MOD_Q,
-            )
-        };
-        let expected_c1 =
-            unsafe { add_mod(multiply_mod(2, 5, MOD_Q), multiply_mod(3, 4, MOD_Q), MOD_Q) };
+        #[cfg(not(feature = "quartic-q"))]
+        {
+            // (2 + 3X)(4 + 5X) = 8 + 10X + 12X + 15X^2 = 8 + 22X + 15*shift
+            let expected_c0 = unsafe {
+                add_mod(
+                    multiply_mod(2, 4, MOD_Q),
+                    multiply_mod(*FIELD_SHIFT_FACTOR, multiply_mod(3, 5, MOD_Q), MOD_Q),
+                    MOD_Q,
+                )
+            };
+            let expected_c1 =
+                unsafe { add_mod(multiply_mod(2, 5, MOD_Q), multiply_mod(3, 4, MOD_Q), MOD_Q) };
 
-        debug_assert_eq!(result.coeffs[0], expected_c0);
-        debug_assert_eq!(result.coeffs[1], expected_c1);
+            debug_assert_eq!(result.coeffs[0], expected_c0);
+            debug_assert_eq!(result.coeffs[1], expected_c1);
+        }
+
+        #[cfg(feature = "quartic-q")]
+        assert_eq!(result.coeffs, [8, 22, 15, 0]);
+    }
+
+    #[test]
+    fn test_extension_canonical_encoding_roundtrip_and_rejection() {
+        let value = QuadraticExtension {
+            coeffs: std::array::from_fn(|index| 17 + 31 * index as u64),
+        };
+        let encoded = value.to_le_bytes();
+        assert_eq!(encoded.len(), EXTENSION_DEGREE * size_of::<u64>());
+        assert_eq!(QuadraticExtension::from_le_bytes(&encoded), Some(value));
+        assert_eq!(
+            QuadraticExtension::from_le_bytes(&encoded[..encoded.len() - 1]),
+            None
+        );
+
+        let mut noncanonical = encoded;
+        noncanonical[..8].copy_from_slice(&MOD_Q.to_le_bytes());
+        assert_eq!(QuadraticExtension::from_le_bytes(&noncanonical), None);
     }
 
     #[test]
@@ -1601,6 +1808,7 @@ mod tests {
 
     /// Verifies that the fused incomplete-NTT multiplication kernel produces
     /// bit-identical results to the original separate-call implementation.
+    #[cfg(not(feature = "quartic-q"))]
     #[test]
     fn test_fused_incomplete_ntt_mult_matches_separate() {
         init_common();
@@ -1717,7 +1925,7 @@ mod tests {
         let slots = a.split_into_quadratic_extensions();
         let inv_slots = a_inv.split_into_quadratic_extensions();
 
-        let one = QuadraticExtension { coeffs: [1, 0] };
+        let one = QuadraticExtension::one();
         for i in 0..HALF_DEGREE {
             let product = slots[i] * inv_slots[i];
             assert_eq!(
