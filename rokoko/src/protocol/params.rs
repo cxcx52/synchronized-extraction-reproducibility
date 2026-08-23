@@ -229,7 +229,11 @@ pub fn p_int(size: SizeConfig) -> AuxSumcheckConfig {
         }),
 
         witness_decomposition_chunks: 2,
-        witness_decomposition_base_log: 10,
+        // The previous 10-bit/two-digit window was smaller than the next-fold
+        // image permitted by the verifier-enforced exact-norm budget.  Five
+        // extra radix bits close that capacity gate without changing the
+        // separate exact-strong theorem modulus or challenge argument.
+        witness_decomposition_base_log: 15,
 
         next: Some(Box::new(AuxConfig::Sumcheck(p_1(size)))),
     }
@@ -314,7 +318,10 @@ fn p_1_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         projection_recursion: AuxProjection::Coarse(AuxRecursionConfig {
-            decomposition_base_log: 23,
+            // A single full-width balanced digit is an exact centered lift of
+            // every F_q coefficient.  Its recomposition operator is one, so
+            // the projection uniqueness proof does not pay a radix factor.
+            decomposition_base_log: 50,
             decomposition_chunks: 1,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -368,7 +375,7 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
         projection_recursion: AuxProjection::Fine {
             nof_batches: 2,
             recursion_constant_term: AuxRecursionConfig {
-                decomposition_base_log: 23,
+                decomposition_base_log: 50,
                 decomposition_chunks: 1,
                 rank: 2,
                 next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -506,7 +513,7 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 23,
+            decomposition_base_log: 50,
             decomposition_chunks: 1,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -547,7 +554,7 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 23,
+            decomposition_base_log: 50,
             decomposition_chunks: 1,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
@@ -588,7 +595,7 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 23,
+            decomposition_base_log: 50,
             decomposition_chunks: 1,
             rank: 2,
             next: None,
@@ -705,34 +712,9 @@ mod tests {
         common::{config::MOD_Q, short_challenge::TAU},
         protocol::{
             commitment::RecursionConfig,
-            config::{Config, Projection, SumcheckConfig},
+            config::{Config, Projection},
         },
     };
-
-    fn recursion_digit_bound(config: &RecursionConfig) -> u128 {
-        let here = 1u128 << (config.decomposition_base_log - 1);
-        config
-            .next
-            .as_deref()
-            .map_or(here, |next| here.max(recursion_digit_bound(next)))
-    }
-
-    fn next_witness_entry_bound(config: &SumcheckConfig) -> u128 {
-        let mut bound = 1u128 << (config.witness_decomposition_base_log - 1);
-        bound = bound.max(recursion_digit_bound(&config.commitment_recursion));
-        bound = bound.max(recursion_digit_bound(&config.opening_recursion));
-        match &config.projection_recursion {
-            Projection::Coarse(recursion) => {
-                bound = bound.max(recursion_digit_bound(recursion));
-            }
-            Projection::Fine(fine) => {
-                bound = bound.max(recursion_digit_bound(&fine.recursion_constant_term));
-                bound = bound.max(recursion_digit_bound(&fine.recursion_batched_projection));
-            }
-            Projection::Skip => {}
-        }
-        bound
-    }
 
     fn symmetric_decomposition_capacity(base_log: usize, chunks: usize) -> u128 {
         let total_bits = base_log * chunks;
@@ -746,9 +728,38 @@ mod tests {
         shift.min(limit - shift - 1)
     }
 
+    fn assert_recursion_covers_centered_field(config: &RecursionConfig) {
+        if config.decomposition_chunks == 1 {
+            assert_eq!(
+                symmetric_decomposition_capacity(
+                    config.decomposition_base_log,
+                    config.decomposition_chunks,
+                ),
+                (MOD_Q / 2) as u128,
+                "a one-digit recursive decomposition must encode every centered field coefficient"
+            );
+        }
+        if let Some(next) = config.next.as_deref() {
+            assert_recursion_covers_centered_field(next);
+        }
+    }
+
     fn assert_fixed_weight_decomposition_capacity(config: &Config, mut input_bound: u128) {
         let mut current = config;
         while let Config::Sumcheck(sumcheck) = current {
+            assert_recursion_covers_centered_field(&sumcheck.commitment_recursion);
+            assert_recursion_covers_centered_field(&sumcheck.opening_recursion);
+            match &sumcheck.projection_recursion {
+                Projection::Coarse(recursion) => {
+                    assert_recursion_covers_centered_field(recursion);
+                }
+                Projection::Fine(fine) => {
+                    assert_recursion_covers_centered_field(&fine.recursion_constant_term);
+                    assert_recursion_covers_centered_field(&fine.recursion_batched_projection);
+                }
+                Projection::Skip => {}
+            }
+
             let folded_bound = sumcheck.witness_width as u128 * TAU as u128 * input_bound;
             let capacity = symmetric_decomposition_capacity(
                 sumcheck.witness_decomposition_base_log,
@@ -766,7 +777,15 @@ mod tests {
                 sumcheck.witness_decomposition_chunks,
                 capacity,
             );
-            input_bound = next_witness_entry_bound(sumcheck);
+            assert!(
+                sumcheck.norm_bound.is_finite(),
+                "capacity certification requires a finite verifier-enforced norm bound"
+            );
+            // Every coefficient in the accepted packed witness is at most its
+            // verifier-enforced Euclidean bound.  This is the malicious-prover
+            // input bound for the following fold; the much larger syntactic
+            // digit range is not an admissible accepted witness by itself.
+            input_bound = sumcheck.norm_bound.ceil() as u128;
             let Some(next) = sumcheck.next.as_deref() else {
                 break;
             };
@@ -836,13 +855,13 @@ mod tests {
     #[test]
     fn fixed_weight_plain_chains_fit_balanced_decomposition_windows() {
         let initial_digit_bound = 1u128 << 15;
-        for size in [
-            super::SizeConfig::Small,
-            super::SizeConfig::Medium,
-            super::SizeConfig::NarrowLarge,
-            super::SizeConfig::Large,
+        for (size, bounds) in [
+            (super::SizeConfig::Small, &super::NB_P_26),
+            (super::SizeConfig::Medium, &super::NB_P_28),
+            (super::SizeConfig::Large, &super::NB_P_30),
         ] {
-            let config = super::p_root_aux(size, 1).generate_config();
+            let mut config = super::p_root_aux(size, 1).generate_config();
+            super::assign_norm_bounds(&mut config, bounds);
             assert_fixed_weight_decomposition_capacity(&config, initial_digit_bound);
         }
     }
@@ -850,13 +869,13 @@ mod tests {
     #[test]
     fn fixed_weight_exact_norm_chains_fit_balanced_decomposition_windows() {
         let initial_digit_bound = 1u128 << 7;
-        for size in [
-            super::SizeConfig::Small,
-            super::SizeConfig::Medium,
-            super::SizeConfig::NarrowLarge,
-            super::SizeConfig::Large,
+        for (size, bounds) in [
+            (super::SizeConfig::Small, &super::NB_P_EN_26),
+            (super::SizeConfig::Medium, &super::NB_P_EN_28),
+            (super::SizeConfig::NarrowLarge, &super::NB_P_EN_29),
         ] {
-            let config = super::p_exact_norm_root_aux(size, 1).generate_config();
+            let mut config = super::p_exact_norm_root_aux(size, 1).generate_config();
+            super::assign_norm_bounds(&mut config, bounds);
             assert_fixed_weight_decomposition_capacity(&config, initial_digit_bound);
         }
     }
