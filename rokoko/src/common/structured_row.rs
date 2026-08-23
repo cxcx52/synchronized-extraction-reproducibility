@@ -16,8 +16,9 @@ pub struct StructuredRow<E: SumcheckElement = RingElement> {
     // ]
     // Then, the entry at position 5 (binary 100) would be computed as:
     // a * (1 - b) * (1 - c).
-    // Notably, the order of layers corresponds to the inverse order of bits in the index,
-    // (i.e. with the first layer corresponding to the least significant bit.)
+    // The implementation consumes index bits from least to most significant while
+    // iterating the layers in reverse. Thus the final layer controls the least
+    // significant bit and the first layer controls the most significant bit.
     pub tensor_layers: Vec<E>,
 }
 

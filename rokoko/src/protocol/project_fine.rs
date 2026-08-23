@@ -616,6 +616,39 @@ pub struct BatchedProjectionChallengesSuccinctWithoutJBatched {
     pub c_2_layers: Vec<u64>, // for columns, not used here but for consistency
 }
 
+pub fn projection_block_count(
+    projection_matrix: &ProjectionMatrix,
+    witness_height: usize,
+) -> usize {
+    assert!(
+        projection_matrix.projection_height.is_power_of_two(),
+        "structured c_1 batching requires a power-of-two projection height"
+    );
+    assert_eq!(
+        projection_matrix.projection_height % DEGREE,
+        0,
+        "projection height must contain a whole number of ring elements"
+    );
+    let rows_per_block =
+        projection_matrix.projection_ratio * (projection_matrix.projection_height / DEGREE);
+    assert!(
+        rows_per_block > 0,
+        "projection block height must be nonzero"
+    );
+    assert_eq!(
+        witness_height % rows_per_block,
+        0,
+        "witness height must be an exact number of projection blocks"
+    );
+    let blocks = witness_height / rows_per_block;
+    assert!(blocks > 0, "at least one projection block is required");
+    assert!(
+        blocks.is_power_of_two(),
+        "structured c_0 batching requires a power-of-two projection block count"
+    );
+    blocks
+}
+
 pub fn sample_layers(
     projection_matrix: &ProjectionMatrix,
     witness_width: usize,
@@ -623,8 +656,7 @@ pub fn sample_layers(
     hash_wrapper: &mut HashWrapper,
 ) -> (Vec<u64>, Vec<u64>, Vec<u64>) {
     // Sample structured challenge layers
-    let d = (witness_height / projection_matrix.projection_ratio) * DEGREE
-        / projection_matrix.projection_height;
+    let d = projection_block_count(projection_matrix, witness_height);
 
     let c_0_layers: Vec<u64> = (0..d.ilog2())
         .map(|_| hash_wrapper.sample_u64_mod_q())
@@ -726,7 +758,7 @@ pub fn batch_projection_n_times(
     HorizontallyAlignedMatrix<RingElement>,
     [BatchedProjectionChallenges; NOF_BATCHES],
 ) {
-    debug_assert_eq!(n, NOF_BATCHES, "Only n=NOF_BATCHES is expected");
+    assert_eq!(n, NOF_BATCHES, "Only n=NOF_BATCHES is supported");
     let mut result = HorizontallyAlignedMatrix {
         data: vec![RingElement::zero(Representation::IncompleteNTT); n * witness.width],
         width: witness.width,

@@ -1,0 +1,154 @@
+{
+  "status": "proved locally",
+  "modulus": 1125899906839937,
+  "invariant": {
+    "supported_block_counts": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "non_power_of_two_policy": "reject; no padding is defined",
+    "c0_layer_count": "log2(n_blocks)",
+    "tensor_order": "layer 0 is the most-significant block-index bit; the last layer folds adjacent blocks first"
+  },
+  "parameterized_cases": [
+    {
+      "blocks": 1,
+      "rows": 2,
+      "columns": 1,
+      "passed": true
+    },
+    {
+      "blocks": 1,
+      "rows": 2,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 1,
+      "rows": 4,
+      "columns": 1,
+      "passed": true
+    },
+    {
+      "blocks": 1,
+      "rows": 4,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 1,
+      "rows": 8,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 2,
+      "rows": 2,
+      "columns": 1,
+      "passed": true
+    },
+    {
+      "blocks": 2,
+      "rows": 2,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 2,
+      "rows": 4,
+      "columns": 1,
+      "passed": true
+    },
+    {
+      "blocks": 2,
+      "rows": 4,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 2,
+      "rows": 8,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 4,
+      "rows": 2,
+      "columns": 1,
+      "passed": true
+    },
+    {
+      "blocks": 4,
+      "rows": 2,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 4,
+      "rows": 4,
+      "columns": 1,
+      "passed": true
+    },
+    {
+      "blocks": 4,
+      "rows": 4,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 4,
+      "rows": 8,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 8,
+      "rows": 2,
+      "columns": 1,
+      "passed": true
+    },
+    {
+      "blocks": 8,
+      "rows": 2,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 8,
+      "rows": 4,
+      "columns": 1,
+      "passed": true
+    },
+    {
+      "blocks": 8,
+      "rows": 4,
+      "columns": 2,
+      "passed": true
+    },
+    {
+      "blocks": 8,
+      "rows": 8,
+      "columns": 2,
+      "passed": true
+    }
+  ],
+  "negative_tests": {
+    "modified_projection_block_changes_claim": true,
+    "modified_c0_changes_claim": true,
+    "swapped_block_order_changes_claim": true,
+    "tensor_index_offset_changes_claim": true,
+    "deleted_c0_layer_rejected": true,
+    "extra_c0_layer_rejected": true,
+    "prover_verifier_block_count_mismatch_rejected": true,
+    "shape_metadata_mismatch_rejected": true,
+    "non_power_of_two_3_rejected": true,
+    "non_power_of_two_5_rejected": true,
+    "non_power_of_two_7_rejected": true,
+    "transcript_block_order_changes_challenges": true,
+    "zero_block_has_only_weighted_zero_contribution": true,
+    "single_block_reads_no_c0_layer": true
+  },
+  "differential_fuzz_cases": 800
+}
