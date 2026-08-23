@@ -281,24 +281,22 @@ fn p_plain_1(size: SizeConfig) -> AuxSumcheckConfig {
 }
 
 fn p_1_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig {
-    let witness_height = if plain_root_chain {
-        size.pick(
-            2usize.pow(12),
-            2usize.pow(12),
-            2usize.pow(14),
-            2usize.pow(13),
-        )
+    let witness_height = size.pick(
+        2usize.pow(13),
+        2usize.pow(13),
+        2usize.pow(14),
+        2usize.pow(14),
+    );
+    let witness_width = if plain_root_chain {
+        // Preserve the projection height and reduce only the number of fold
+        // columns when the two-digit root produces a smaller packed witness.
+        size.pick(2usize.pow(2), 2usize.pow(3), 2usize.pow(4), 2usize.pow(3))
     } else {
-        size.pick(
-            2usize.pow(13),
-            2usize.pow(13),
-            2usize.pow(14),
-            2usize.pow(14),
-        )
+        size.pick(2usize.pow(3), 2usize.pow(4), 2usize.pow(4), 2usize.pow(4))
     };
     AuxSumcheckConfig {
         witness_height,
-        witness_width: size.pick(2usize.pow(3), 2usize.pow(4), 2usize.pow(4), 2usize.pow(4)),
+        witness_width,
         projection_ratio: 2usize.pow(5),
         projection_height: 2usize.pow(8),
         basic_commitment_rank: size.pick(5, 5, 6, 6),
@@ -334,24 +332,20 @@ fn p_1_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig
 }
 
 pub fn p_2(size: SizeConfig) -> AuxSumcheckConfig {
-    p_2_with_chain(size, false)
+    p_2_with_chain(size)
 }
 
 fn p_plain_2(size: SizeConfig) -> AuxSumcheckConfig {
-    p_2_with_chain(size, true)
+    p_2_with_chain(size)
 }
 
-fn p_2_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig {
-    let witness_height = if plain_root_chain {
-        size.pick(2usize.pow(9), 2usize.pow(9), 2usize.pow(11), 2usize.pow(10))
-    } else {
-        size.pick(
-            2usize.pow(10),
-            2usize.pow(10),
-            2usize.pow(11),
-            2usize.pow(11),
-        )
-    };
+fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
+    let witness_height = size.pick(
+        2usize.pow(10),
+        2usize.pow(10),
+        2usize.pow(11),
+        2usize.pow(11),
+    );
     AuxSumcheckConfig {
         witness_height,
         witness_width: 2usize.pow(5),
