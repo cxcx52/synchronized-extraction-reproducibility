@@ -347,7 +347,7 @@ pub fn execute_snark() {
 
 #[cfg(test)]
 mod tests {
-    use super::{execute, execute_to_boundary};
+    use super::{execute, execute_snark, execute_to_boundary};
     use crate::common::init_common;
     use std::num::NonZeroUsize;
 
@@ -394,5 +394,15 @@ mod tests {
     fn calibrate_full_chain_norms() {
         init_common();
         execute();
+    }
+
+    /// Long-running exact-norm/SNARK counterpart of
+    /// `calibrate_full_chain_norms`.  It exercises `P_EN_TWO_EVALS` and is
+    /// deliberately ignored unless explicitly requested.
+    #[test]
+    #[ignore = "exact-norm full-chain calibration is intentionally long-running"]
+    fn calibrate_exact_norm_chain() {
+        init_common();
+        execute_snark();
     }
 }
