@@ -1,0 +1,118 @@
+% Standalone insertion prepared by proof_audit/verify_cyclo_radix6.py.
+% This file is not input by the main manuscript.
+\begin{lemma}[Rigorous quadratic-splitting approximate-strong sampler]
+\label{lem:radix-six-approx-strong}
+Let
+\[
+  R=\mathbb Z[X]/(X^{128}+1),\qquad
+  q=447183309836853377,
+\]
+and let $\mathcal D_6\subset R_q$ be the distribution obtained by sampling
+the $128$ coefficients independently and uniformly from
+$\mathcal A=\{-3,-2,-1,0,1,2\}$.  Then
+$|\mathcal D_6|=6^{128}$ and
+\[
+  \Pr_{s,s'\leftarrow\mathcal D_6}
+  \bigl[s-s'\notin R_q^\times\mid s\ne s'\bigr]
+  \le
+  \kappa_{\rm nu}^{(6)}
+  :=\frac{64\cdot6^{-44}-6^{-128}}{1-6^{-128}}.
+\]
+Moreover, every $s\in\operatorname{supp}(\mathcal D_6)$ satisfies
+$\|s\|_{\rm op}\le384$.
+\end{lemma}
+
+\begin{proof}
+The accompanying machine-checkable Pocklington certificate proves that $q$
+is prime.  It also verifies
+\[
+ q\equiv129\pmod {256},\qquad
+ 6^{64}\equiv-1\pmod q,\qquad
+ \operatorname{ord}_q(6)=128.
+\]
+Consequently, writing $\omega_u=6^u$ for odd $u\in\{1,\ldots,127\}$,
+\[
+ X^{128}+1=\prod_{\substack{1\le u<128\\u\text{ odd}}}(X^2-\omega_u)\pmod q.
+\]
+There are $64$ distinct factors.  Each is irreducible: $v_2(q-1)=7$ and an
+element of order $128$ is a nonsquare in $\mathbb F_q$.
+
+Fix one factor $X^2-\omega_u$ and use the basis $\{1,Y\}$ of its quadratic
+residue field.  The residue of
+$s=\sum_{i=0}^{127}s_iX^i$ is $A_u+YB_u$, where
+\[
+ A_u=\sum_{j=0}^{63}s_{2j}\omega_u^j,
+ \qquad
+ B_u=\sum_{j=0}^{63}s_{2j+1}\omega_u^j.
+\]
+For $t\in\{0,\ldots,21\}$, let $r_t$ represent $u^{-1}t$ modulo $128$ and
+put
+\[
+ (j_t,\epsilon_t)=
+ \begin{cases}
+ (r_t,+1),&r_t<64,\\
+ (r_t-64,-1),&r_t\ge64.
+ \end{cases}
+\]
+Then $\omega_u^{j_t}=\epsilon_t6^t$, and the $22$ indices $j_t$ are
+distinct.  After fixing all other even coefficients, the unfixed part of
+$A_u$ is therefore a translate of
+$\sum_{t=0}^{21}\epsilon_td_t6^t$ with independent uniform
+$d_t\in\mathcal A$.
+
+This $22$-digit map is injective.  Indeed, the integer difference of two
+colliding blocks has absolute value at most
+\[
+ 5\sum_{t=0}^{21}6^t=6^{22}-1<q.
+\]
+Modular equality is thus integer equality.  Reduction modulo $6$, followed by
+division by $6$ and induction, forces all digit differences in $[-5,5]$ to
+vanish.  Hence $\max_a\Pr[A_u=a]\le6^{-22}$.  The identical argument for
+$B_u$ uses disjoint odd coefficients, so coefficient independence gives
+\[
+ \max_{a,b}\Pr[(A_u,B_u)=(a,b)]\le6^{-44}.
+\]
+For independent $s,s'$, collision in this slot has probability at most
+$6^{-44}$.  A difference is a nonunit only if such a collision occurs in one
+of the $64$ CRT slots, whence
+$\Pr[s-s'\notin R_q^\times]\le64\cdot6^{-44}$.
+Since $\Pr[s=s']=6^{-128}$ and equality is contained in the nonunit event,
+subtracting this repeat event and conditioning on $s\ne s'$ gives the stated
+$\kappa_{\rm nu}^{(6)}$.
+
+Finally, negacyclic convolution gives
+$\|ts\bmod(X^{128}+1,q)\|_\infty
+ \le\|t\|_\infty\|s\|_1$, while
+$\|s\|_1\le128\cdot3=384$.
+\end{proof}
+
+\begin{corollary}[Explicit Cyclo interface]
+\label{cor:radix-six-cyclo-interface}
+In the challenge-dependent terms of Cyclo Theorem~3, the distribution
+$\mathcal D_6$ may be instantiated with
+\[
+ |\mathcal D_6|=6^{128},\qquad
+ \gamma=384,\qquad
+ \kappa_{\rm nu}=\kappa_{\rm nu}^{(6)}.
+\]
+Thus the repeat and nonunit contributions are, respectively,
+\[
+ L6^{-128}
+ \quad\text{and}\quad
+ L\frac{64\cdot6^{-44}-6^{-128}}{1-6^{-128}}.
+\]
+Numerically,
+$-\log_2\kappa_{\rm nu}^{(6)}\ge107.738350031731$.
+\end{corollary}
+
+\begin{remark}[Scope and trade-off]
+Lemma~\ref{lem:radix-six-approx-strong} gives an explicit heuristic-free
+quadratic-splitting replacement for the reasoning of Cyclo Lemma~9.  It does
+not preserve Cyclo's original benchmark: the displayed modulus has $59$ bits
+and is outside the original $50$-bit AVX-512/IFMA parameter line.  It does not
+give $128$-bit nonunit security and does not improve the separate exact-strong
+flagship radius line.  For this radix argument, reaching a $128$-bit
+$64$-slot bound first occurs at $26$ digits, which requires
+$q>6^{26}-1$ and hence at least a $68$-bit modulus; this is a construction-
+specific trade-off, not a general lower bound.
+\end{remark}
