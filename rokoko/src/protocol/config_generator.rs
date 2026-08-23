@@ -192,6 +192,14 @@ impl AuxSumcheckConfig {
 
     fn collect_components(&self, components: &mut Vec<ComponentInfo>) {
         // Folded witness
+        // The linear sumcheck indexes decomposition chunks as Boolean
+        // variables, so the chunk count itself must be a power of two.  Do
+        // not silently pad a non-power-of-two decomposition here: that would
+        // make the layout succeed while the sumcheck relation is malformed.
+        assert!(
+            self.witness_decomposition_chunks.is_power_of_two(),
+            "witness decomposition chunks must be a power of two"
+        );
         let folded_size = self.witness_height * self.witness_decomposition_chunks;
         components.push(ComponentInfo {
             name: "folded_witness".to_string(),

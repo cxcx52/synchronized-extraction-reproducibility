@@ -1,4 +1,8 @@
 //! Per-round norm tracking and RSIS hardness estimation (`debug-hardness`).
+//!
+//! Security certification is deliberately based on verifier-enforced norm
+//! bounds from the parameter set.  Honest-run norms are printed only as
+//! completeness diagnostics and never enter a malicious-prover SIS estimate.
 //! The extracted witness norm is the worse of the rewinding bound and the JL
 //! projection bound, as in the paper's extraction analysis.
 
@@ -117,6 +121,18 @@ fn recomposition_l2_operator_norm(base_log: usize, chunks: usize) -> f64 {
     operator_norm
 }
 
+fn certified_recomposition_bound(
+    verifier_enforced_decomposed_bound: f64,
+    base_log: usize,
+    chunks: usize,
+) -> f64 {
+    assert!(
+        verifier_enforced_decomposed_bound.is_finite(),
+        "security certification requires a finite verifier-enforced norm bound"
+    );
+    verifier_enforced_decomposed_bound * recomposition_l2_operator_norm(base_log, chunks)
+}
+
 fn check_recursive_commitment(
     rc: &RecursiveCommitmentWithAux,
     config: &RecursionConfig,
@@ -219,22 +235,21 @@ pub fn check_sumcheck_round(
     );
 
     let folded_prefix = &config.folded_witness_prefix;
-    let folded_region_length =
+    let folded_region_capacity =
         1usize << (next_round_data.len().ilog2() as usize - folded_prefix.length);
     let folded_region_start =
         folded_prefix.prefix << (next_round_data.len().ilog2() as usize - folded_prefix.length);
+    let folded_region_length = config.witness_height * config.witness_decomposition_chunks;
+    assert!(folded_region_length <= folded_region_capacity);
     let decomposed_folded_witness_l2 = norms::l2_norm(
         &next_round_data[folded_region_start..folded_region_start + folded_region_length],
     );
-    let packed_without_most_inner_l2 =
-        (recommited_ell_2_norm.powf(2.0) - most_inner_commitment_data_ell_2.powf(2.0)).sqrt();
-
     check_recursive_commitment(
         rc_commitment,
         &config.commitment_recursion,
         "Commitment",
-        packed_without_most_inner_l2,
-        most_inner_commitment_data_ell_2,
+        config.norm_bound,
+        config.most_inner_norm_bound,
         0,
     );
 
@@ -242,8 +257,8 @@ pub fn check_sumcheck_round(
         rc_opening,
         &config.opening_recursion,
         "Opening",
-        packed_without_most_inner_l2,
-        most_inner_commitment_data_ell_2,
+        config.norm_bound,
+        config.most_inner_norm_bound,
         0,
     );
 
@@ -254,8 +269,8 @@ pub fn check_sumcheck_round(
             rc_projection,
             projection_config,
             "Projection Image",
-            packed_without_most_inner_l2,
-            most_inner_commitment_data_ell_2,
+            config.norm_bound,
+            config.most_inner_norm_bound,
             0,
         );
     }
@@ -267,16 +282,16 @@ pub fn check_sumcheck_round(
             rc_ct,
             &projection_config.recursion_constant_term,
             "Fine Projection Constant Term",
-            packed_without_most_inner_l2,
-            most_inner_commitment_data_ell_2,
+            config.norm_bound,
+            config.most_inner_norm_bound,
             0,
         );
         check_recursive_commitment(
             rc_batched,
             &projection_config.recursion_batched_projection,
             "Fine Projection Batched",
-            packed_without_most_inner_l2,
-            most_inner_commitment_data_ell_2,
+            config.norm_bound,
+            config.most_inner_norm_bound,
             0,
         );
     }
@@ -288,11 +303,16 @@ pub fn check_sumcheck_round(
         MOD_Q
     );
 
-    let recomposed_witness_bound = decomposed_folded_witness_l2
-        * recomposition_l2_operator_norm(
-            config.witness_decomposition_base_log,
-            config.witness_decomposition_chunks,
-        );
+    let observed_recomposed_folded_witness_l2 = norms::l2_norm(&compose_from_decomposed(
+        &next_round_data[folded_region_start..folded_region_start + folded_region_length].to_vec(),
+        config.witness_decomposition_base_log as u64,
+        config.witness_decomposition_chunks,
+    ));
+    let recomposed_witness_bound = certified_recomposition_bound(
+        config.norm_bound,
+        config.witness_decomposition_base_log,
+        config.witness_decomposition_chunks,
+    );
 
     let extracted_witness_bound =
         recomposed_witness_bound * SPECTRAL_OP_NORM_SAFE_BOUND * EXTRACTION_SLACK;
@@ -314,11 +334,11 @@ pub fn check_sumcheck_round(
                 proj_config.decomposition_chunks,
             ));
             (
-                decomposed_projection_l2
-                    * recomposition_l2_operator_norm(
-                        proj_config.decomposition_base_log,
-                        proj_config.decomposition_chunks,
-                    ),
+                certified_recomposition_bound(
+                    config.norm_bound,
+                    proj_config.decomposition_base_log,
+                    proj_config.decomposition_chunks,
+                ),
                 observed_recomposed_projection_l2,
                 decomposed_projection_l2,
                 proj_config.decomposition_base_log,
@@ -337,11 +357,11 @@ pub fn check_sumcheck_round(
                 constant_term.decomposition_chunks,
             ));
             (
-                decomposed_projection_l2
-                    * recomposition_l2_operator_norm(
-                        constant_term.decomposition_base_log,
-                        constant_term.decomposition_chunks,
-                    ),
+                certified_recomposition_bound(
+                    config.norm_bound,
+                    constant_term.decomposition_base_log,
+                    constant_term.decomposition_chunks,
+                ),
                 observed_recomposed_projection_l2,
                 decomposed_projection_l2,
                 constant_term.decomposition_base_log,
@@ -379,14 +399,17 @@ pub fn check_sumcheck_round(
             if exhaustive_audit_enabled() {
                 eprintln!(
                     "HARDNESS_AUDIT sumcheck uniqueness_holds={uniqueness_holds} \
-                     width={next_level_width} next_data_l2={recommited_ell_2_norm} \
+                     provenance=verifier_enforced width={next_level_width} next_data_l2={recommited_ell_2_norm} \
                      decomposed_folded_witness_l2={decomposed_folded_witness_l2} \
+                     observed_recomposed_folded_witness_l2={observed_recomposed_folded_witness_l2} \
+                     certified_combined_bound={} \
                      decomposed_projection_l2={decomposed_projection_l2} \
                      observed_recomposed_projection_l2={observed_recomposed_projection_l2} \
                      projection_base_log={projection_base_log} projection_chunks={projection_chunks} \
                      recomposed_projection_bound={recomposed_projection_bound} \
                      argued_witness_bound={argued_witness_bound} \
-                     width_times_bound_squared={uniqueness_lhs} q_over_two={uniqueness_rhs}"
+                     width_times_bound_squared={uniqueness_lhs} q_over_two={uniqueness_rhs}",
+                    config.norm_bound
                 );
             } else {
                 assert!(
@@ -422,10 +445,13 @@ pub fn check_sumcheck_round(
     );
     if exhaustive_audit_enabled() {
         eprintln!(
-            "HARDNESS_AUDIT sumcheck extracted_bound={extracted_witness_bound} \
+                    "HARDNESS_AUDIT sumcheck provenance=verifier_enforced extracted_bound={extracted_witness_bound} \
              decomposed_folded_witness_l2={decomposed_folded_witness_l2} \
+             observed_recomposed_folded_witness_l2={observed_recomposed_folded_witness_l2} \
+             certified_combined_bound={} \
              projection_argued_bound={argued_witness_bound} selected_bound={worse_bound} \
              basic_rank={} estimated_security={basic_commitment_security:?}",
+            config.norm_bound,
             config.basic_commitment_rank
         );
     }
@@ -459,11 +485,11 @@ pub fn check_intermediate_round(
         MOD_Q
     );
 
-    let recomposed_witness_bound = recommited_ell_2_norm
-        * recomposition_l2_operator_norm(
-            config.witness_decomposition_base_log,
-            config.witness_decomposition_chunks,
-        );
+    let recomposed_witness_bound = certified_recomposition_bound(
+        config.norm_bound,
+        config.witness_decomposition_base_log,
+        config.witness_decomposition_chunks,
+    );
 
     tracing::debug!("Folded witness norm: {}", recomposed_witness_bound);
 
@@ -472,16 +498,21 @@ pub fn check_intermediate_round(
     let extracted_witness_bound =
         recomposed_witness_bound * SPECTRAL_OP_NORM_SAFE_BOUND * EXTRACTION_SLACK;
 
-    let argued_witness_bound = projection_l2_norm / JL_ALPHA_RP;
+    let argued_witness_bound = config.projection_norm_bound / JL_ALPHA_RP;
 
     let uniqueness_lhs = argued_witness_bound * argued_witness_bound;
     let uniqueness_rhs = MOD_Q as f64 / 2f64;
     let uniqueness_holds = uniqueness_lhs < uniqueness_rhs;
     if exhaustive_audit_enabled() {
         eprintln!(
-            "HARDNESS_AUDIT intermediate uniqueness_holds={uniqueness_holds} \
+            "HARDNESS_AUDIT intermediate provenance=verifier_enforced uniqueness_holds={uniqueness_holds} \
+             observed_combined_l2={recommited_ell_2_norm} observed_folded_l2={folded_witness_ell_2_norm} \
+             observed_projection_l2={projection_l2_norm} certified_combined_bound={} \
+             certified_projection_bound={} \
              projection_argued_bound={argued_witness_bound} \
-             bound_squared={uniqueness_lhs} q_over_two={uniqueness_rhs}"
+             bound_squared={uniqueness_lhs} q_over_two={uniqueness_rhs}",
+            config.norm_bound,
+            config.projection_norm_bound
         );
     } else {
         assert!(
@@ -524,9 +555,12 @@ pub fn check_intermediate_round(
     );
     if exhaustive_audit_enabled() {
         eprintln!(
-            "HARDNESS_AUDIT intermediate extracted_bound={extracted_witness_bound} \
+            "HARDNESS_AUDIT intermediate provenance=verifier_enforced extracted_bound={extracted_witness_bound} \
+             certified_combined_bound={} certified_projection_bound={} \
              projection_argued_bound={argued_witness_bound} selected_bound={worse_bound} \
              basic_rank={} estimated_security={basic_commitment_security:?}",
+            config.norm_bound,
+            config.projection_norm_bound,
             config.basic_commitment_rank
         );
     }
@@ -545,9 +579,36 @@ pub fn check_simple_round(
     let projection_l2_norm = norms::l2_norm_coeffs(projection_image_ct_data);
 
     let extracted_witness_bound =
-        folded_witness_l2_norm * SPECTRAL_OP_NORM_SAFE_BOUND * EXTRACTION_SLACK;
+        config.witness_norm_bound * SPECTRAL_OP_NORM_SAFE_BOUND * EXTRACTION_SLACK;
 
-    let argued_witness_bound = projection_l2_norm / JL_ALPHA_RP;
+    let argued_witness_bound = config.projection_norm_bound / JL_ALPHA_RP;
+    let uniqueness_lhs = config.witness_width as f64 * argued_witness_bound.powi(2);
+    let uniqueness_rhs = MOD_Q as f64 / 2.0;
+    let uniqueness_holds = uniqueness_lhs < uniqueness_rhs;
+    if exhaustive_audit_enabled() {
+        eprintln!(
+            "HARDNESS_AUDIT simple provenance=verifier_enforced uniqueness_holds={uniqueness_holds} \
+             width={} observed_witness_l2={folded_witness_l2_norm} \
+             observed_projection_l2={projection_l2_norm} certified_witness_bound={} \
+             certified_projection_bound={} argued_witness_bound={argued_witness_bound} \
+             width_times_bound_squared={uniqueness_lhs} q_over_two={uniqueness_rhs}",
+            config.witness_width,
+            config.witness_norm_bound,
+            config.projection_norm_bound
+        );
+    } else {
+        assert!(
+            uniqueness_holds,
+            "Simple projection bound exceeds centered uniqueness gate: width={}, \
+             certified_projection_bound={}, argued_witness_bound={}, \
+             width_times_bound_squared={}, q_over_two={}",
+            config.witness_width,
+            config.projection_norm_bound,
+            argued_witness_bound,
+            uniqueness_lhs,
+            uniqueness_rhs
+        );
+    }
     let worse_bound = if extracted_witness_bound > argued_witness_bound {
         tracing::debug!(
             "Using extracted witness bound {} for security estimation.",
@@ -580,9 +641,12 @@ pub fn check_simple_round(
     );
     if exhaustive_audit_enabled() {
         eprintln!(
-            "HARDNESS_AUDIT simple extracted_bound={extracted_witness_bound} \
+            "HARDNESS_AUDIT simple provenance=verifier_enforced extracted_bound={extracted_witness_bound} \
+             certified_witness_bound={} certified_projection_bound={} \
              projection_argued_bound={argued_witness_bound} selected_bound={worse_bound} \
              basic_rank={} estimated_security={basic_commitment_security:?}",
+            config.witness_norm_bound,
+            config.projection_norm_bound,
             config.basic_commitment_rank
         );
     }

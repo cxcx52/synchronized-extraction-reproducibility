@@ -262,21 +262,42 @@ pub fn p_root_aux(size: SizeConfig, nof_openings: usize) -> AuxSumcheckConfig {
         },
         projection_recursion: AuxProjection::Skip,
 
-        witness_decomposition_chunks: 4,
-        witness_decomposition_base_log: 8,
+        // The repository-performance chain uses two balanced digits.  This
+        // reduces the certified recomposition loss while preserving the full
+        // source capacity.  The large instance needs one extra bit per digit.
+        witness_decomposition_chunks: size.pick(2, 2, 4, 2),
+        witness_decomposition_base_log: size.pick(15, 15, 8, 16),
 
-        next: Some(Box::new(AuxConfig::Sumcheck(p_1(size)))),
+        next: Some(Box::new(AuxConfig::Sumcheck(p_plain_1(size)))),
     }
 }
 
 pub fn p_1(size: SizeConfig) -> AuxSumcheckConfig {
+    p_1_with_chain(size, false)
+}
+
+fn p_plain_1(size: SizeConfig) -> AuxSumcheckConfig {
+    p_1_with_chain(size, true)
+}
+
+fn p_1_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig {
+    let witness_height = if plain_root_chain {
+        size.pick(
+            2usize.pow(12),
+            2usize.pow(12),
+            2usize.pow(14),
+            2usize.pow(13),
+        )
+    } else {
+        size.pick(
+            2usize.pow(13),
+            2usize.pow(13),
+            2usize.pow(14),
+            2usize.pow(14),
+        )
+    };
     AuxSumcheckConfig {
-        witness_height: size.pick(
-            2usize.pow(13),
-            2usize.pow(13),
-            2usize.pow(14),
-            2usize.pow(14),
-        ),
+        witness_height,
         witness_width: size.pick(2usize.pow(3), 2usize.pow(4), 2usize.pow(4), 2usize.pow(4)),
         projection_ratio: 2usize.pow(5),
         projection_height: 2usize.pow(8),
@@ -295,27 +316,44 @@ pub fn p_1(size: SizeConfig) -> AuxSumcheckConfig {
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
         projection_recursion: AuxProjection::Coarse(AuxRecursionConfig {
-            decomposition_base_log: 10,
-            decomposition_chunks: 2,
+            decomposition_base_log: 20,
+            decomposition_chunks: 1,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         }),
 
         witness_decomposition_chunks: 2,
-        witness_decomposition_base_log: 10,
+        witness_decomposition_base_log: 14,
 
-        next: Some(Box::new(AuxConfig::Sumcheck(p_2(size)))),
+        next: Some(Box::new(AuxConfig::Sumcheck(if plain_root_chain {
+            p_plain_2(size)
+        } else {
+            p_2(size)
+        }))),
     }
 }
 
 pub fn p_2(size: SizeConfig) -> AuxSumcheckConfig {
+    p_2_with_chain(size, false)
+}
+
+fn p_plain_2(size: SizeConfig) -> AuxSumcheckConfig {
+    p_2_with_chain(size, true)
+}
+
+fn p_2_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig {
+    let witness_height = if plain_root_chain {
+        size.pick(2usize.pow(9), 2usize.pow(9), 2usize.pow(11), 2usize.pow(10))
+    } else {
+        size.pick(
+            2usize.pow(10),
+            2usize.pow(10),
+            2usize.pow(11),
+            2usize.pow(11),
+        )
+    };
     AuxSumcheckConfig {
-        witness_height: size.pick(
-            2usize.pow(10),
-            2usize.pow(10),
-            2usize.pow(11),
-            2usize.pow(11),
-        ),
+        witness_height,
         witness_width: 2usize.pow(5),
         projection_ratio: size.pick(2usize.pow(5), 2usize.pow(5), 2usize.pow(8), 2usize.pow(8)),
         projection_height: 2usize.pow(8),
@@ -336,8 +374,8 @@ pub fn p_2(size: SizeConfig) -> AuxSumcheckConfig {
         projection_recursion: AuxProjection::Fine {
             nof_batches: 2,
             recursion_constant_term: AuxRecursionConfig {
-                decomposition_base_log: 10,
-                decomposition_chunks: 2,
+                decomposition_base_log: 20,
+                decomposition_chunks: 1,
                 rank: 2,
                 next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
             },
@@ -350,7 +388,7 @@ pub fn p_2(size: SizeConfig) -> AuxSumcheckConfig {
         },
 
         witness_decomposition_chunks: 2,
-        witness_decomposition_base_log: 11,
+        witness_decomposition_base_log: 16,
 
         next: Some(Box::new(AuxConfig::Sumcheck(P_3.clone()))),
     }
@@ -474,8 +512,8 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 10,
-            decomposition_chunks: 2,
+            decomposition_base_log: 20,
+            decomposition_chunks: 1,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
@@ -488,7 +526,7 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 11,
+    witness_decomposition_base_log: 16,
 
     next: Some(Box::new(AuxConfig::Sumcheck(P_4.clone()))),
 });
@@ -515,8 +553,8 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 10,
-            decomposition_chunks: 2,
+            decomposition_base_log: 20,
+            decomposition_chunks: 1,
             rank: 2,
             next: Some(Box::new(DECOMP_8_LAST_LEVEL.clone())),
         },
@@ -529,7 +567,7 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 10,
+    witness_decomposition_base_log: 15,
 
     next: Some(Box::new(AuxConfig::Sumcheck(P_5.clone()))),
 });
@@ -556,8 +594,8 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     projection_recursion: AuxProjection::Fine {
         nof_batches: 2,
         recursion_constant_term: AuxRecursionConfig {
-            decomposition_base_log: 10,
-            decomposition_chunks: 2,
+            decomposition_base_log: 20,
+            decomposition_chunks: 1,
             rank: 2,
             next: None,
         },
@@ -570,7 +608,7 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 10,
+    witness_decomposition_base_log: 15,
     next: Some(Box::new(AuxConfig::Simple(P_LAST.clone()))),
 });
 
