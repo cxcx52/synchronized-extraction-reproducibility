@@ -11,6 +11,9 @@ This is the repository `q_perf` exact-norm p29 line.  It remains separate from t
 - Result: 1 passed; elapsed 2387.95 s (peak monitor 2389.842 s).
 - Peak RSS: aggregate 71,525,028 KiB; largest process 71,486,768 KiB; two processes at aggregate peak; 0.1 s sampling.
 - Remote HEAD: `16b05f32496f91442607f8cb21482b52990f505a` with the recorded parameter and initial multi-block verifier changes uncommitted.
+- Local branch/commits: `audit/code-fixes`; exact-p29 parameters `17685d8`; final Simple validator `5bb6e5c`.
+- Normalized captured stdout: `proof_audit/generated/exact_p29_calibration_captured_stdout.log`.
+- Cloud-only audit: no remote calibration log/JSON/CSV exists; the peak monitor is byte-identical to the committed local copy (SHA-256 `0fed1e2d...9492f0`), and the remote source diff is superseded by the two local commits.
 
 ## Raw empirical norm ledger
 

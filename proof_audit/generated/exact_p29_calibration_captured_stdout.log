@@ -1,0 +1,50 @@
+# exact-p29 captured calibration stdout
+#
+# Remote task: /hy-tmp/codex-exact-p29.0nCePo
+# Remote repository HEAD: 16b05f32496f91442607f8cb21482b52990f505a
+# Remote branch: audit/code-fixes
+# Command: cargo test calibrate_exact_norm_chain --lib --features p-29 --offline -- --ignored --nocapture
+# Environment: ROKOKO_CALIBRATE_NORMS=1
+# ANSI cursor-wrap sequences emitted by the PTY are normalized below.  The
+# remote command was not tee'd to a file; this local record preserves every
+# captured protocol/calibration value and the final test/peak-RSS result.
+
+TOTAL Commit time: 238918651648 ns
+Initial claims sumcheck done: 516973 ms
+TOTAL Prover time: 1519512509573 ns
+norm calibration: label="norm claim via inner-product" value=449095.42486424866 old_bound=301286.0855424053
+norm calibration: label="most inner norm claim via inner-product" value=4573.127048311691 old_bound=2814.1639180403117
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=14054360.108911611 old_bound=inf
+norm calibration: label="recomposed projection norm claim via inner-product" value=27241906.0563594 old_bound=inf
+norm calibration: label="norm claim via inner-product" value=2541655.0585606615 old_bound=207653.9393205985
+norm calibration: label="most inner norm claim via inner-product" value=4586.439795745716 old_bound=3232.4329468683495
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=2535673.1294317096 old_bound=inf
+norm calibration: label="recomposed projection norm claim via inner-product" value=5092534.207931646 old_bound=inf
+norm calibration: label="norm claim via inner-product" value=31410872.07525025 old_bound=250271.0801520208
+norm calibration: label="most inner norm claim via inner-product" value=4567.333357660682 old_bound=3224.2077380342603
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=18808604.998299476 old_bound=inf
+norm calibration: label="recomposed projection norm claim via inner-product" value=28742421.257555842 old_bound=inf
+norm calibration: label="norm claim via inner-product" value=6615918.423300351 old_bound=60058.69332853321
+norm calibration: label="most inner norm claim via inner-product" value=5264.4899718861649 old_bound=3223.9274748666417
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=23874083.661871046 old_bound=inf
+norm calibration: label="recomposed projection norm claim via inner-product" value=28177438.972140476 old_bound=inf
+norm calibration: label="norm claim via inner-product" value=31244341.336710155 old_bound=57745.171184818566
+norm calibration: label="most inner norm claim via inner-product" value=5297.1511687463745 old_bound=3231.2624417091224
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=30857943.832717095 old_bound=inf
+norm calibration: label="recomposed projection norm claim via inner-product" value=29436314.23636514 old_bound=inf
+norm calibration: label="norm claim via inner-product" value=28157775.739574444 old_bound=36477.43270767284
+norm calibration: label="most inner norm claim via inner-product" value=5272.1877022479381 old_bound=3227.5469169014414
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=21531674.06203266 old_bound=inf
+norm calibration: label="recomposed projection norm claim via inner-product" value=26968264.736921042 old_bound=inf
+norm calibration: label="norm claim via inner-product" value=6186013.78539969 old_bound=200847.7450554494
+norm calibration: label="most inner norm claim via inner-product" value=233106.229238825795 old_bound=200736.78734982785
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=15447729.974848181 old_bound=inf
+norm calibration: label="recomposed projection norm claim via inner-product" value=22645685.164770506 old_bound=inf
+TOTAL Verifier time: 1270112112 ns
+norm calibration: label="folded witness in simple verifier" value=35134549.260899948 old_bound=988144.6860000001
+norm calibration: label="projection image in simple verifier" value=72395534.868896506 old_bound=2371282.23
+test protocol::parties::executor::tests::calibrate_exact_norm_chain ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 154 filtered out; finished in 2387.95s
+
+PEAK_RSS aggregate_kib=71525028 single_process_kib=71486768 processes_at_aggregate_peak=2 elapsed_seconds=2389.842 sample_interval_seconds=0.100
