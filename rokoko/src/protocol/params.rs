@@ -388,8 +388,11 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
             },
         },
 
-        witness_decomposition_chunks: 2,
-        witness_decomposition_base_log: 17,
+        // From p2 onward the packed layout already has enough slack for an
+        // exact one-digit centered lift.  This removes every remaining radix
+        // factor from the certified extraction bound.
+        witness_decomposition_chunks: 1,
+        witness_decomposition_base_log: 50,
 
         next: Some(Box::new(AuxConfig::Sumcheck(P_3.clone()))),
     }
@@ -526,8 +529,8 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
         },
     },
 
-    witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 17,
+    witness_decomposition_chunks: 1,
+    witness_decomposition_base_log: 50,
 
     next: Some(Box::new(AuxConfig::Sumcheck(P_4.clone()))),
 });
@@ -567,8 +570,8 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
         },
     },
 
-    witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 17,
+    witness_decomposition_chunks: 1,
+    witness_decomposition_base_log: 50,
 
     next: Some(Box::new(AuxConfig::Sumcheck(P_5.clone()))),
 });
@@ -608,8 +611,8 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
         },
     },
 
-    witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 17,
+    witness_decomposition_chunks: 1,
+    witness_decomposition_base_log: 50,
     next: Some(Box::new(AuxConfig::Simple(P_LAST.clone()))),
 });
 
