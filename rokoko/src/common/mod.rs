@@ -8,6 +8,8 @@ pub mod hash;
 pub mod matrix;
 pub mod norms;
 pub mod projection_matrix;
+#[cfg(feature = "quartic-q-audit")]
+pub mod quartic_ring;
 pub mod ring_arithmetic;
 pub mod sampling;
 pub mod short_challenge;

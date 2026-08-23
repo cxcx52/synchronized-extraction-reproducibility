@@ -1,0 +1,37 @@
+{
+  "status": "proved locally",
+  "scope": "isolated quartic arithmetic backend; not yet wired into the protocol",
+  "modulus": 926510094425921,
+  "ring_degree": 128,
+  "extension_degree": 4,
+  "slots": 32,
+  "transform": "four independent size-32 negacyclic NTT streams",
+  "homogenization": "slot X^4-beta^u maps to common T^4-beta by X -> T^u",
+  "tests": [
+    "quartic_multiplication_matches_naive_negacyclic_reference",
+    "quartic_slot_and_ring_inverses_are_correct",
+    "quartic_slot_constants_match_certified_factorization",
+    "quartic_transform_round_trip"
+  ],
+  "differential_counts": {
+    "coefficient_slot_round_trips": 256,
+    "fast_vs_naive_negacyclic_products": 256,
+    "slotwise_and_ring_inverses": 16,
+    "certified_slot_constants": 32
+  },
+  "reference_independence": "the multiplication oracle is direct O(128^2) coefficient-domain negacyclic convolution and does not reuse the NTT or slot code",
+  "claim_boundary": {
+    "proved": [
+      "quartic transform round trip",
+      "homogeneous slot multiplication",
+      "ring multiplication against an independent reference",
+      "quartic and whole-ring inversion for units"
+    ],
+    "not_yet_proved": [
+      "protocol transcript and sum-check migration",
+      "quartic-backend empirical completeness",
+      "redesigned centered gates",
+      "publication performance"
+    ]
+  }
+}
