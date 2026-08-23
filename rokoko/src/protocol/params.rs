@@ -396,7 +396,7 @@ fn p_1_with_chain(size: SizeConfig, plain_root_chain: bool) -> AuxSumcheckConfig
         }),
 
         witness_decomposition_chunks: 2,
-        witness_decomposition_base_log: 14,
+        witness_decomposition_base_log: 16,
 
         next: Some(Box::new(AuxConfig::Sumcheck(if plain_root_chain {
             p_plain_2(size)
@@ -457,7 +457,7 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
         },
 
         witness_decomposition_chunks: 2,
-        witness_decomposition_base_log: 14,
+        witness_decomposition_base_log: 16,
 
         next: Some(Box::new(AuxConfig::Sumcheck(P_3.clone()))),
     }
@@ -613,7 +613,7 @@ pub static P_3: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 14,
+    witness_decomposition_base_log: 15,
 
     next: Some(Box::new(AuxConfig::Sumcheck(P_4.clone()))),
 });
@@ -654,7 +654,7 @@ pub static P_4: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 13,
+    witness_decomposition_base_log: 14,
 
     next: Some(Box::new(AuxConfig::Sumcheck(P_5.clone()))),
 });
@@ -695,7 +695,7 @@ pub static P_5: LazyLock<AuxSumcheckConfig> = LazyLock::new(|| AuxSumcheckConfig
     },
 
     witness_decomposition_chunks: 2,
-    witness_decomposition_base_log: 13,
+    witness_decomposition_base_log: 14,
     next: Some(Box::new(AuxConfig::Simple(P_LAST.clone()))),
 });
 
