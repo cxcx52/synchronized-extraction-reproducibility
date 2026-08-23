@@ -668,7 +668,7 @@ mod tests {
         protocol::{
             commitment::RecursionConfig,
             config::{Config, Projection},
-            params::{P_LARGE, P_MEDIUM},
+            params::{P_EN_SMALL, P_LARGE, P_MEDIUM},
         },
     };
 
@@ -882,9 +882,10 @@ mod tests {
     }
 
     #[test]
-    fn registered_p28_and_p30_bounds_are_128_bit_certified() {
+    fn registered_p28_p30_and_exact_p26_bounds_are_128_bit_certified() {
         certify_registered_config("p28", &P_MEDIUM);
         certify_registered_config("p30", &P_LARGE);
+        certify_registered_config("exact-p26", &P_EN_SMALL);
     }
 
     #[test]
