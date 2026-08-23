@@ -1,0 +1,58 @@
+{
+  "status": "information-theoretic obstruction",
+  "scope": "q_perf whole-ring single-fork unit-difference interface only",
+  "constants": {
+    "q_perf": 1125899906839937,
+    "q_is_prime": true,
+    "q_mod_256": 129,
+    "v2_q_minus_1": 7,
+    "ring_degree": 128,
+    "irreducible_factor_count": 64,
+    "irreducible_factor_degree": 2
+  },
+  "proof_ledger": [
+    "X^128+1 splits into 64 irreducible quadratics X^2-omega",
+    "reduction modulo any fixed factor maps challenges into F_(q^2)",
+    "Cauchy--Schwarz gives unconditional component collision at least q^-2",
+    "removing C=C' gives (M-q^2)/(q^2(M-1)) when M>q^2",
+    "averaging over the first challenge yields a pointwise obstruction"
+  ],
+  "rows": [
+    {
+      "weight": 32,
+      "support_size": 6347132397654734652814305971963481292800,
+      "log2_support_size": 132.22130063735855,
+      "quadratic_component_size": 1267650600222178815397338163969,
+      "log2_quadratic_component_size": 99.99999999999311,
+      "support_over_component": 5007004608.7954235,
+      "distinct_nonunit_probability_lower_bound_numerator": 6347132396387084052592127156566143128831,
+      "distinct_nonunit_probability_lower_bound_denominator": 8045946193576661332761842311597098223332814519905711499983233160959231,
+      "distinct_nonunit_probability_lower_bound": 7.888609050672256e-31,
+      "minus_log2_distinct_lower_bound": 100.00000000028125,
+      "uniform_pointwise_upper_below_2^-128_possible": false
+    },
+    {
+      "weight": 34,
+      "support_size": 206366657634977468925727167430684311552000,
+      "log2_support_size": 137.24426178580185,
+      "quadratic_component_size": 1267650600222178815397338163969,
+      "log2_quadratic_component_size": 99.99999999999311,
+      "support_over_component": 162794588350.13998,
+      "distinct_nonunit_probability_lower_bound_numerator": 206366657633709818325504988615286973388031,
+      "distinct_nonunit_probability_lower_bound_denominator": 261600817416824069001026744676525974320165682064245108126509059531724031,
+      "distinct_nonunit_probability_lower_bound": 7.888609052199313e-31,
+      "minus_log2_distinct_lower_bound": 100.00000000000198,
+      "uniform_pointwise_upper_below_2^-128_possible": false
+    }
+  ],
+  "minimum_interface_change": {
+    "necessary_factor_degree_at_50_bit_q": 3,
+    "warning": "degree at least three is necessary, not sufficient; a matching upper bound is still required",
+    "alternatives": [
+      "change the performance modulus so relevant factors have degree at least three",
+      "prove a genuinely joint multi-fork bound under the conditional fork law",
+      "change the extraction relation to a rigorously justified component-wise interface"
+    ]
+  },
+  "separation": "No q_exact theorem-line property is imported into q_perf, or conversely."
+}
