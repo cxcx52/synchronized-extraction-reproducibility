@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Re-run every registered static gate and SIS estimate at the quartic q.
+"""Re-run every registered static gate and SIS estimate on the quartic line.
 
-This is a transfer screen over the currently installed verifier bounds.  It
-does not claim that those empirically calibrated bounds transfer as
-completeness bounds to a not-yet-implemented quartic arithmetic backend.
+This is a post-wiring geometry screen over the currently installed verifier
+bounds.  It does not claim that old empirically calibrated bounds transfer as
+completeness bounds to the new quartic geometry.
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ def cargo_test(name: str) -> str:
             name,
             "--lib",
             "--features",
-            "debug-hardness",
+            "debug-hardness,quartic-q",
             "--offline",
             "--",
             "--nocapture",
@@ -131,17 +131,38 @@ def summarize(security: list[dict], gates: list[dict]) -> list[dict]:
 
 
 def write_report(result: dict) -> None:
+    all_static_checks_pass = (
+        result["security_passing"] == result["security_entries"]
+        and result["gates_passing"] == result["gates"]
+    )
+    status = (
+        "**static geometry screen passed; quartic completeness calibration remains required**"
+        if all_static_checks_pass
+        else "**redesign required**"
+    )
     lines = [
-        "# Static transfer screen at the quartic candidate modulus",
+        "# Static quartic geometry screen",
         "",
-        "Status: **redesign required**.  Every pinned SIS/commitment estimator entry remains at least 128 bits, but existing installed geometry fails centered uniqueness in several rounds.",
+        f"Status: {status}.",
         "",
-        "This is a static screen over current verifier-enforced bounds at `q_4`; it is not a quartic-backend completeness calibration or benchmark.",
+        "This is a static screen of the quartic-only geometry over the previously installed verifier-enforced bounds at `q_4`; it is not a completeness calibration, final parameter certification, or benchmark.",
         "",
         f"- `q_4 = {Q_QUARTIC}`",
         f"- `q_4/2 = {Q_QUARTIC / 2}`",
         f"- security: {result['security_passing']}/{result['security_entries']} entries at least 128 bits",
         f"- centered gates: {result['gates_passing']}/{result['gates']} pass",
+        "",
+        "## Quartic-only geometry changes",
+        "",
+        "| scope | old geometry | quartic geometry | reason |",
+        "|---|---:|---:|---|",
+        "| `p30/p_2` | `2048 x 32` | `4096 x 16` | close r1 centered gate at unchanged input capacity |",
+        "| `p30/p_3` | `512 x 16` | `1024 x 16` | carry the enlarged p2 composed image without widening |",
+        "| `p30/p_4` | `512 x 8` | `1024 x 8` | carry the enlarged p3 composed image without widening |",
+        "| `exact-p28/p_3` | `512 x 16` | `1024 x 8` | close r3 centered gate at unchanged input capacity |",
+        "| terminal (`p26`, `p28`, `p30`, `exact-p26`, `exact-p28`) | `1024 x 4` | `2048 x 2` | close the final centered gate at unchanged input capacity |",
+        "",
+        "The exact-p29 terminal was already `2048 x 2`; no q4 override changes it.",
         "",
         "## Per-line summary",
         "",
@@ -153,25 +174,25 @@ def write_report(result: dict) -> None:
         lines.append(
             f"| `{row['parameter_line']}` | {row['centered_gates_passing']}/{row['centered_gates']} | {failures} | {row['security_entries_ge_128']}/{row['security_entries']} | {row['minimum_classical_sis_bits']:.0f} |"
         )
-    lines.extend(
-        [
-            "",
-            "## Failing centered gates",
-            "",
-            "| line/round | current width | lhs | q4/2 | lhs/rhs | largest power-of-two width at same bound |",
-            "|---|---:|---:|---:|---:|---:|",
-        ]
-    )
-    for row in result["centered_gates"]:
-        if row["holds"]:
-            continue
-        lines.append(
-            f"| `{row['parameter_line']}/r{row['round']}` | {row['width']} | {row['lhs']:.6f} | {row['rhs']:.1f} | {row['lhs_over_rhs']:.6f} | {row['max_power_of_two_width_at_same_projection_bound']} |"
+    lines.extend(["", "## Failing centered gates", ""])
+    failing_gates = [row for row in result["centered_gates"] if not row["holds"]]
+    if failing_gates:
+        lines.extend(
+            [
+                "| line/round | current width | lhs | q4/2 | lhs/rhs | largest power-of-two width at same bound |",
+                "|---|---:|---:|---:|---:|---:|",
+            ]
         )
+        for row in failing_gates:
+            lines.append(
+                f"| `{row['parameter_line']}/r{row['round']}` | {row['width']} | {row['lhs']:.6f} | {row['rhs']:.1f} | {row['lhs_over_rhs']:.6f} | {row['max_power_of_two_width_at_same_projection_bound']} |"
+            )
+    else:
+        lines.append("None in the post-wiring static screen.")
     lines.extend(
         [
             "",
-            "The width column is only a necessary static repair at the same projection bound.  Capacity must be restored by increasing height, and all downstream geometry, empirical completeness bounds, gates, and estimator entries must then be regenerated.  Increasing rank cannot repair any centered-gate failure.",
+            "Every changed layout preserves the predecessor capacity required by the generated chain.  The old bounds used here are only a static redesign screen: quartic full-chain calibration must regenerate PB/FB/NB before the gates and estimator rows become final certificates.  Increasing rank cannot repair centered uniqueness.",
             "",
             "`exact-p29/r2` passes but is close to the boundary; its static lhs/rhs ratio is recorded in the JSON and must not be treated as empirical quartic-backend headroom.",
         ]
@@ -189,8 +210,8 @@ def main() -> None:
     assert all(row["modulus"] == Q_QUARTIC for row in security)
     summary = summarize(security, gates)
     result = {
-        "status": "redesign required: SIS passes, centered uniqueness does not",
-        "scope": "static transfer screen only; no quartic implementation, completeness calibration, or benchmark",
+        "status": "static geometry screen pending evaluation",
+        "scope": "post-wiring quartic geometry screen only; no new-geometry completeness calibration or benchmark",
         "q_quartic": Q_QUARTIC,
         "q_quartic_over_two": Q_QUARTIC / 2,
         "security_entries": len(security),
@@ -207,10 +228,18 @@ def main() -> None:
             "rust_audit_environment": {
                 "ROKOKO_AUDIT_MODULUS": str(Q_QUARTIC),
                 "ROKOKO_AUDIT_HARDNESS": "1",
+                "cargo_features": "debug-hardness,quartic-q",
             },
-            "claim_boundary": "These bounds have not been recalibrated on quartic arithmetic.  Passing security rows are a static malicious-prover-bound screen; completeness and performance remain uncertified.",
+            "claim_boundary": "These bounds have not been recalibrated on the changed quartic geometry. Passing rows are a static redesign screen only; completeness, final malicious-prover-bound certification, and performance remain uncertified.",
         },
     }
+    if (
+        result["security_passing"] == result["security_entries"]
+        and result["gates_passing"] == result["gates"]
+    ):
+        result["status"] = "static geometry screen passed; quartic completeness calibration pending"
+    else:
+        result["status"] = "redesign required: a static SIS or centered gate failed"
     JSON_OUT.parent.mkdir(parents=True, exist_ok=True)
     JSON_OUT.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     write_report(result)

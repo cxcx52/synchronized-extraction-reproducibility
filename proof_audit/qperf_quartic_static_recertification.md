@@ -1,37 +1,41 @@
-# Static transfer screen at the quartic candidate modulus
+# Static quartic geometry screen
 
-Status: **redesign required**.  Every pinned SIS/commitment estimator entry remains at least 128 bits, but existing installed geometry fails centered uniqueness in several rounds.
+Status: **static geometry screen passed; quartic completeness calibration remains required**.
 
-This is a static screen over current verifier-enforced bounds at `q_4`; it is not a quartic-backend completeness calibration or benchmark.
+This is a static screen of the quartic-only geometry over the previously installed verifier-enforced bounds at `q_4`; it is not a completeness calibration, final parameter certification, or benchmark.
 
 - `q_4 = 926510094425921`
 - `q_4/2 = 463255047212960.5`
 - security: 297/297 entries at least 128 bits
-- centered gates: 35/42 pass
+- centered gates: 42/42 pass
+
+## Quartic-only geometry changes
+
+| scope | old geometry | quartic geometry | reason |
+|---|---:|---:|---|
+| `p30/p_2` | `2048 x 32` | `4096 x 16` | close r1 centered gate at unchanged input capacity |
+| `p30/p_3` | `512 x 16` | `1024 x 16` | carry the enlarged p2 composed image without widening |
+| `p30/p_4` | `512 x 8` | `1024 x 8` | carry the enlarged p3 composed image without widening |
+| `exact-p28/p_3` | `512 x 16` | `1024 x 8` | close r3 centered gate at unchanged input capacity |
+| terminal (`p26`, `p28`, `p30`, `exact-p26`, `exact-p28`) | `1024 x 4` | `2048 x 2` | close the final centered gate at unchanged input capacity |
+
+The exact-p29 terminal was already `2048 x 2`; no q4 override changes it.
 
 ## Per-line summary
 
 | line | centered gates | failing rounds | SIS/commitment entries | minimum bits |
 |---|---:|---|---:|---:|
-| `exact-p26` | 7/8 | 7 | 54/54 | 130 |
-| `exact-p28` | 6/8 | 3, 7 | 54/54 | 130 |
+| `exact-p26` | 8/8 | none | 54/54 | 130 |
+| `exact-p28` | 8/8 | none | 54/54 | 130 |
 | `exact-p29` | 8/8 | none | 54/54 | 130 |
-| `p26` | 5/6 | 6 | 45/45 | 130 |
-| `p28` | 5/6 | 6 | 45/45 | 130 |
-| `p30` | 4/6 | 1, 6 | 45/45 | 130 |
+| `p26` | 6/6 | none | 45/45 | 130 |
+| `p28` | 6/6 | none | 45/45 | 130 |
+| `p30` | 6/6 | none | 45/45 | 130 |
 
 ## Failing centered gates
 
-| line/round | current width | lhs | q4/2 | lhs/rhs | largest power-of-two width at same bound |
-|---|---:|---:|---:|---:|---:|
-| `p26/r6` | 4 | 524782523278880.437500 | 463255047212960.5 | 1.132816 | 2 |
-| `p28/r6` | 4 | 555290410208102.500000 | 463255047212960.5 | 1.198671 | 2 |
-| `p30/r1` | 32 | 543044077889662.000000 | 463255047212960.5 | 1.172236 | 16 |
-| `p30/r6` | 4 | 520068198812393.437500 | 463255047212960.5 | 1.122639 | 2 |
-| `exact-p26/r7` | 4 | 519276105607047.750000 | 463255047212960.5 | 1.120929 | 2 |
-| `exact-p28/r3` | 16 | 472953850901292.250000 | 463255047212960.5 | 1.020936 | 8 |
-| `exact-p28/r7` | 4 | 554758566778591.625000 | 463255047212960.5 | 1.197523 | 2 |
+None in the post-wiring static screen.
 
-The width column is only a necessary static repair at the same projection bound.  Capacity must be restored by increasing height, and all downstream geometry, empirical completeness bounds, gates, and estimator entries must then be regenerated.  Increasing rank cannot repair any centered-gate failure.
+Every changed layout preserves the predecessor capacity required by the generated chain.  The old bounds used here are only a static redesign screen: quartic full-chain calibration must regenerate PB/FB/NB before the gates and estimator rows become final certificates.  Increasing rank cannot repair centered uniqueness.
 
 `exact-p29/r2` passes but is close to the boundary; its static lhs/rhs ratio is recorded in the JSON and must not be treated as empirical quartic-backend headroom.

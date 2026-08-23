@@ -1,13 +1,13 @@
 {
-  "status": "redesign required: SIS passes, centered uniqueness does not",
-  "scope": "static transfer screen only; no quartic implementation, completeness calibration, or benchmark",
+  "status": "static geometry screen passed; quartic completeness calibration pending",
+  "scope": "post-wiring quartic geometry screen only; no new-geometry completeness calibration or benchmark",
   "q_quartic": 926510094425921,
   "q_quartic_over_two": 463255047212960.5,
   "security_entries": 297,
   "security_passing": 297,
   "minimum_classical_sis_bits": 130.0,
   "gates": 42,
-  "gates_passing": 35,
+  "gates_passing": 42,
   "summary": [
     {
       "parameter_line": "exact-p26",
@@ -15,10 +15,8 @@
       "minimum_classical_sis_bits": 130.0,
       "security_entries_ge_128": 54,
       "centered_gates": 8,
-      "centered_gates_passing": 7,
-      "failing_rounds": [
-        7
-      ]
+      "centered_gates_passing": 8,
+      "failing_rounds": []
     },
     {
       "parameter_line": "exact-p28",
@@ -26,11 +24,8 @@
       "minimum_classical_sis_bits": 130.0,
       "security_entries_ge_128": 54,
       "centered_gates": 8,
-      "centered_gates_passing": 6,
-      "failing_rounds": [
-        3,
-        7
-      ]
+      "centered_gates_passing": 8,
+      "failing_rounds": []
     },
     {
       "parameter_line": "exact-p29",
@@ -47,10 +42,8 @@
       "minimum_classical_sis_bits": 130.0,
       "security_entries_ge_128": 45,
       "centered_gates": 6,
-      "centered_gates_passing": 5,
-      "failing_rounds": [
-        6
-      ]
+      "centered_gates_passing": 6,
+      "failing_rounds": []
     },
     {
       "parameter_line": "p28",
@@ -58,10 +51,8 @@
       "minimum_classical_sis_bits": 130.0,
       "security_entries_ge_128": 45,
       "centered_gates": 6,
-      "centered_gates_passing": 5,
-      "failing_rounds": [
-        6
-      ]
+      "centered_gates_passing": 6,
+      "failing_rounds": []
     },
     {
       "parameter_line": "p30",
@@ -69,11 +60,8 @@
       "minimum_classical_sis_bits": 130.0,
       "security_entries_ge_128": 45,
       "centered_gates": 6,
-      "centered_gates_passing": 4,
-      "failing_rounds": [
-        1,
-        6
-      ]
+      "centered_gates_passing": 6,
+      "failing_rounds": []
     }
   ],
   "centered_gates": [
@@ -128,11 +116,11 @@
     {
       "parameter_line": "p26",
       "round": 5,
-      "width": 4,
-      "lhs": 105382929645882.86,
+      "width": 2,
+      "lhs": 52691464822941.43,
       "rhs": 463255047212960.5,
       "holds": true,
-      "lhs_over_rhs": 0.2274836081762922,
+      "lhs_over_rhs": 0.1137418040881461,
       "max_width_at_same_projection_bound": 17,
       "max_power_of_two_width_at_same_projection_bound": 16,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -140,11 +128,11 @@
     {
       "parameter_line": "p26",
       "round": 6,
-      "width": 4,
-      "lhs": 524782523278880.44,
+      "width": 2,
+      "lhs": 262391261639440.22,
       "rhs": 463255047212960.5,
-      "holds": false,
-      "lhs_over_rhs": 1.132815554705949,
+      "holds": true,
+      "lhs_over_rhs": 0.5664077773529745,
       "max_width_at_same_projection_bound": 3,
       "max_power_of_two_width_at_same_projection_bound": 2,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -164,11 +152,11 @@
     {
       "parameter_line": "p28",
       "round": 2,
-      "width": 16,
-      "lhs": 344242224163225.06,
+      "width": 8,
+      "lhs": 172121112081612.53,
       "rhs": 463255047212960.5,
       "holds": true,
-      "lhs_over_rhs": 0.7430943844740785,
+      "lhs_over_rhs": 0.37154719223703925,
       "max_width_at_same_projection_bound": 21,
       "max_power_of_two_width_at_same_projection_bound": 16,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -200,11 +188,11 @@
     {
       "parameter_line": "p28",
       "round": 5,
-      "width": 4,
-      "lhs": 134086228128952.48,
+      "width": 2,
+      "lhs": 67043114064476.24,
       "rhs": 463255047212960.5,
       "holds": true,
-      "lhs_over_rhs": 0.2894436421915818,
+      "lhs_over_rhs": 0.1447218210957909,
       "max_width_at_same_projection_bound": 13,
       "max_power_of_two_width_at_same_projection_bound": 8,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -212,11 +200,11 @@
     {
       "parameter_line": "p28",
       "round": 6,
-      "width": 4,
-      "lhs": 555290410208102.5,
+      "width": 2,
+      "lhs": 277645205104051.25,
       "rhs": 463255047212960.5,
-      "holds": false,
-      "lhs_over_rhs": 1.1986710421156683,
+      "holds": true,
+      "lhs_over_rhs": 0.5993355210578342,
       "max_width_at_same_projection_bound": 3,
       "max_power_of_two_width_at_same_projection_bound": 2,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -224,11 +212,11 @@
     {
       "parameter_line": "p30",
       "round": 1,
-      "width": 32,
-      "lhs": 543044077889662.0,
+      "width": 16,
+      "lhs": 271522038944831.0,
       "rhs": 463255047212960.5,
-      "holds": false,
-      "lhs_over_rhs": 1.1722356424538254,
+      "holds": true,
+      "lhs_over_rhs": 0.5861178212269127,
       "max_width_at_same_projection_bound": 27,
       "max_power_of_two_width_at_same_projection_bound": 16,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -272,11 +260,11 @@
     {
       "parameter_line": "p30",
       "round": 5,
-      "width": 4,
-      "lhs": 69224196767451.12,
+      "width": 2,
+      "lhs": 34612098383725.56,
       "rhs": 463255047212960.5,
       "holds": true,
-      "lhs_over_rhs": 0.14942998934154825,
+      "lhs_over_rhs": 0.07471499467077412,
       "max_width_at_same_projection_bound": 26,
       "max_power_of_two_width_at_same_projection_bound": 16,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -284,11 +272,11 @@
     {
       "parameter_line": "p30",
       "round": 6,
-      "width": 4,
-      "lhs": 520068198812393.44,
+      "width": 2,
+      "lhs": 260034099406196.72,
       "rhs": 463255047212960.5,
-      "holds": false,
-      "lhs_over_rhs": 1.1226390342452452,
+      "holds": true,
+      "lhs_over_rhs": 0.5613195171226226,
       "max_width_at_same_projection_bound": 3,
       "max_power_of_two_width_at_same_projection_bound": 2,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -368,11 +356,11 @@
     {
       "parameter_line": "exact-p26",
       "round": 6,
-      "width": 4,
-      "lhs": 122366522906976.11,
+      "width": 2,
+      "lhs": 61183261453488.055,
       "rhs": 463255047212960.5,
       "holds": true,
-      "lhs_over_rhs": 0.264145039850421,
+      "lhs_over_rhs": 0.1320725199252105,
       "max_width_at_same_projection_bound": 15,
       "max_power_of_two_width_at_same_projection_bound": 8,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -380,11 +368,11 @@
     {
       "parameter_line": "exact-p26",
       "round": 7,
-      "width": 4,
-      "lhs": 519276105607047.75,
+      "width": 2,
+      "lhs": 259638052803523.88,
       "rhs": 463255047212960.5,
-      "holds": false,
-      "lhs_over_rhs": 1.120929191664768,
+      "holds": true,
+      "lhs_over_rhs": 0.560464595832384,
       "max_width_at_same_projection_bound": 3,
       "max_power_of_two_width_at_same_projection_bound": 2,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -428,11 +416,11 @@
     {
       "parameter_line": "exact-p28",
       "round": 3,
-      "width": 16,
-      "lhs": 472953850901292.25,
+      "width": 8,
+      "lhs": 236476925450646.12,
       "rhs": 463255047212960.5,
-      "holds": false,
-      "lhs_over_rhs": 1.020936207272175,
+      "holds": true,
+      "lhs_over_rhs": 0.5104681036360875,
       "max_width_at_same_projection_bound": 15,
       "max_power_of_two_width_at_same_projection_bound": 8,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -464,11 +452,11 @@
     {
       "parameter_line": "exact-p28",
       "round": 6,
-      "width": 4,
-      "lhs": 125058850220548.53,
+      "width": 2,
+      "lhs": 62529425110274.266,
       "rhs": 463255047212960.5,
       "holds": true,
-      "lhs_over_rhs": 0.26995680019662777,
+      "lhs_over_rhs": 0.13497840009831388,
       "max_width_at_same_projection_bound": 14,
       "max_power_of_two_width_at_same_projection_bound": 8,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -476,11 +464,11 @@
     {
       "parameter_line": "exact-p28",
       "round": 7,
-      "width": 4,
-      "lhs": 554758566778591.6,
+      "width": 2,
+      "lhs": 277379283389295.8,
       "rhs": 463255047212960.5,
-      "holds": false,
-      "lhs_over_rhs": 1.1975229846196722,
+      "holds": true,
+      "lhs_over_rhs": 0.5987614923098361,
       "max_width_at_same_projection_bound": 3,
       "max_power_of_two_width_at_same_projection_bound": 2,
       "bound_provenance": "currently installed verifier-enforced projection bound"
@@ -1113,7 +1101,7 @@
     },
     {
       "scope": "p26/r6/simple-basic",
-      "m": 1024,
+      "m": 2048,
       "rank": 7,
       "certified_bound": 8609692449.248508,
       "result": "Ok(EstimatorResult { secpar: 135.0 })",
@@ -1377,7 +1365,7 @@
     },
     {
       "scope": "p28/r3/commitment recursive depth 0",
-      "m": 1024,
+      "m": 512,
       "rank": 4,
       "certified_bound": 22620389.486011393,
       "result": "Ok(EstimatorResult { secpar: 141.0 })",
@@ -1401,7 +1389,7 @@
     },
     {
       "scope": "p28/r3/opening recursive depth 0",
-      "m": 256,
+      "m": 128,
       "rank": 4,
       "certified_bound": 22620389.486011393,
       "result": "Ok(EstimatorResult { secpar: 141.0 })",
@@ -1449,7 +1437,7 @@
     },
     {
       "scope": "p28/r3/projection-batched recursive depth 0",
-      "m": 256,
+      "m": 128,
       "rank": 4,
       "certified_bound": 22620389.486011393,
       "result": "Ok(EstimatorResult { secpar: 141.0 })",
@@ -1473,7 +1461,7 @@
     },
     {
       "scope": "p28/r3/basic",
-      "m": 512,
+      "m": 1024,
       "rank": 7,
       "certified_bound": 7910714069.940075,
       "result": "Ok(EstimatorResult { secpar: 136.0 })",
@@ -1653,7 +1641,7 @@
     },
     {
       "scope": "p28/r6/simple-basic",
-      "m": 1024,
+      "m": 2048,
       "rank": 7,
       "certified_bound": 8630039573.640352,
       "result": "Ok(EstimatorResult { secpar: 135.0 })",
@@ -1809,7 +1797,7 @@
     },
     {
       "scope": "p30/r2/commitment recursive depth 0",
-      "m": 2048,
+      "m": 1024,
       "rank": 4,
       "certified_bound": 25525204.39111763,
       "result": "Ok(EstimatorResult { secpar: 139.0 })",
@@ -1833,7 +1821,7 @@
     },
     {
       "scope": "p30/r2/opening recursive depth 0",
-      "m": 512,
+      "m": 256,
       "rank": 4,
       "certified_bound": 25525204.39111763,
       "result": "Ok(EstimatorResult { secpar: 139.0 })",
@@ -1881,7 +1869,7 @@
     },
     {
       "scope": "p30/r2/projection-batched recursive depth 0",
-      "m": 512,
+      "m": 256,
       "rank": 4,
       "certified_bound": 25525204.39111763,
       "result": "Ok(EstimatorResult { secpar: 139.0 })",
@@ -1905,7 +1893,7 @@
     },
     {
       "scope": "p30/r2/basic",
-      "m": 2048,
+      "m": 4096,
       "rank": 7,
       "certified_bound": 7618994530.319783,
       "result": "Ok(EstimatorResult { secpar: 137.0 })",
@@ -1965,7 +1953,7 @@
     },
     {
       "scope": "p30/r3/projection-constant recursive depth 0",
-      "m": 512,
+      "m": 1024,
       "rank": 4,
       "certified_bound": 29978725.266268026,
       "result": "Ok(EstimatorResult { secpar: 136.0 })",
@@ -2013,7 +2001,7 @@
     },
     {
       "scope": "p30/r3/basic",
-      "m": 512,
+      "m": 1024,
       "rank": 7,
       "certified_bound": 8442487015.059947,
       "result": "Ok(EstimatorResult { secpar: 135.0 })",
@@ -2073,7 +2061,7 @@
     },
     {
       "scope": "p30/r4/projection-constant recursive depth 0",
-      "m": 256,
+      "m": 512,
       "rank": 4,
       "certified_bound": 24373637.74728787,
       "result": "Ok(EstimatorResult { secpar: 139.0 })",
@@ -2121,7 +2109,7 @@
     },
     {
       "scope": "p30/r4/basic",
-      "m": 512,
+      "m": 1024,
       "rank": 7,
       "certified_bound": 5537130925.0618,
       "result": "Ok(EstimatorResult { secpar: 141.0 })",
@@ -2193,7 +2181,7 @@
     },
     {
       "scope": "p30/r6/simple-basic",
-      "m": 1024,
+      "m": 2048,
       "rank": 7,
       "certified_bound": 8129757817.510525,
       "result": "Ok(EstimatorResult { secpar: 135.0 })",
@@ -2841,7 +2829,7 @@
     },
     {
       "scope": "exact-p26/r7/simple-basic",
-      "m": 1024,
+      "m": 2048,
       "rank": 7,
       "certified_bound": 8163761484.183297,
       "result": "Ok(EstimatorResult { secpar: 135.0 })",
@@ -3213,7 +3201,7 @@
     },
     {
       "scope": "exact-p28/r4/commitment recursive depth 0",
-      "m": 1024,
+      "m": 512,
       "rank": 4,
       "certified_bound": 18721930.039900187,
       "result": "Ok(EstimatorResult { secpar: 144.0 })",
@@ -3237,7 +3225,7 @@
     },
     {
       "scope": "exact-p28/r4/opening recursive depth 0",
-      "m": 256,
+      "m": 128,
       "rank": 4,
       "certified_bound": 18721930.039900187,
       "result": "Ok(EstimatorResult { secpar: 144.0 })",
@@ -3285,7 +3273,7 @@
     },
     {
       "scope": "exact-p28/r4/projection-batched recursive depth 0",
-      "m": 256,
+      "m": 128,
       "rank": 4,
       "certified_bound": 18721930.039900187,
       "result": "Ok(EstimatorResult { secpar: 144.0 })",
@@ -3309,7 +3297,7 @@
     },
     {
       "scope": "exact-p28/r4/basic",
-      "m": 512,
+      "m": 1024,
       "rank": 7,
       "certified_bound": 8449391755.522132,
       "result": "Ok(EstimatorResult { secpar: 135.0 })",
@@ -3489,7 +3477,7 @@
     },
     {
       "scope": "exact-p28/r7/simple-basic",
-      "m": 1024,
+      "m": 2048,
       "rank": 7,
       "certified_bound": 8208714462.275481,
       "result": "Ok(EstimatorResult { secpar: 135.0 })",
@@ -4153,8 +4141,9 @@
     "estimator": "pinned classical Euclidean-SIS MATZOV/GSA Rust port rerun at exact q_quartic",
     "rust_audit_environment": {
       "ROKOKO_AUDIT_MODULUS": "926510094425921",
-      "ROKOKO_AUDIT_HARDNESS": "1"
+      "ROKOKO_AUDIT_HARDNESS": "1",
+      "cargo_features": "debug-hardness,quartic-q"
     },
-    "claim_boundary": "These bounds have not been recalibrated on quartic arithmetic.  Passing security rows are a static malicious-prover-bound screen; completeness and performance remain uncertified."
+    "claim_boundary": "These bounds have not been recalibrated on the changed quartic geometry. Passing rows are a static redesign screen only; completeness, final malicious-prover-bound certification, and performance remain uncertified."
   }
 }

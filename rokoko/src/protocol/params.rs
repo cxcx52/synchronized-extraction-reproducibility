@@ -39,6 +39,28 @@ impl SizeConfig {
     }
 }
 
+#[cfg(feature = "quartic-q")]
+#[inline(always)]
+const fn quartic_geometry(
+    _default_height: usize,
+    _default_width: usize,
+    quartic_height: usize,
+    quartic_width: usize,
+) -> (usize, usize) {
+    (quartic_height, quartic_width)
+}
+
+#[cfg(not(feature = "quartic-q"))]
+#[inline(always)]
+const fn quartic_geometry(
+    default_height: usize,
+    default_width: usize,
+    _quartic_height: usize,
+    _quartic_width: usize,
+) -> (usize, usize) {
+    (default_height, default_width)
+}
+
 #[inline(always)]
 #[allow(unreachable_code)]
 pub fn compiled_size() -> SizeConfig {
@@ -503,7 +525,7 @@ fn p_plain_2(size: SizeConfig) -> AuxSumcheckConfig {
 }
 
 fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
-    let witness_height = size.pick(
+    let default_height = size.pick(
         // The performance-p26 predecessor's certified projection radius
         // cannot satisfy centered uniqueness with 32 successor columns.
         // Preserve the 2^15-ring-element capacity while halving the width.
@@ -515,9 +537,18 @@ fn p_2_with_chain(size: SizeConfig) -> AuxSumcheckConfig {
         2usize.pow(12),
         2usize.pow(11),
     );
+    let default_width = size.pick(2usize.pow(4), 2usize.pow(4), 2usize.pow(4), 2usize.pow(5));
+    // At q4, the Large predecessor cannot satisfy centered uniqueness with
+    // 32 successor columns.  A 4096-by-16 layout preserves its 2^16-element
+    // capacity and changes no default quadratic parameter line.
+    let (witness_height, witness_width) = if size == SizeConfig::Large {
+        quartic_geometry(default_height, default_width, 2usize.pow(12), 2usize.pow(4))
+    } else {
+        (default_height, default_width)
+    };
     AuxSumcheckConfig {
         witness_height,
-        witness_width: size.pick(2usize.pow(4), 2usize.pow(4), 2usize.pow(4), 2usize.pow(5)),
+        witness_width,
         projection_ratio: size.pick(2usize.pow(5), 2usize.pow(5), 2usize.pow(8), 2usize.pow(8)),
         projection_height: 2usize.pow(8),
         basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
@@ -672,11 +703,27 @@ pub static P_TWO_EVALS: LazyLock<Config> = LazyLock::new(|| match compiled_size(
 });
 
 pub fn p_3(size: SizeConfig) -> AuxSumcheckConfig {
+    let default_height = size.pick(2usize.pow(10), 2usize.pow(9), 2usize.pow(11), 2usize.pow(9));
+    let default_width = size.pick(2usize.pow(3), 2usize.pow(4), 2usize.pow(3), 2usize.pow(4));
+    // The exact-p28 r3 gate is just outside q4/2 at width 16.  Preserve the
+    // 2^13-element successor capacity with a 1024-by-8 quartic-only layout.
+    let (witness_height, witness_width) = match size {
+        SizeConfig::Medium => {
+            quartic_geometry(default_height, default_width, 2usize.pow(10), 2usize.pow(3))
+        }
+        // The 4096-by-16 p2 repair doubles p2's folded-component height.
+        // Its p30 successor must therefore carry 2^14, while retaining the
+        // centered-safe width 16.
+        SizeConfig::Large => {
+            quartic_geometry(default_height, default_width, 2usize.pow(10), 2usize.pow(4))
+        }
+        _ => (default_height, default_width),
+    };
     AuxSumcheckConfig {
         // NarrowLarge needs the larger packed output created by its reshaped p2.
         // The width-eight layout also strengthens p2's centered-uniqueness gate.
-        witness_height: size.pick(2usize.pow(10), 2usize.pow(9), 2usize.pow(11), 2usize.pow(9)),
-        witness_width: size.pick(2usize.pow(3), 2usize.pow(4), 2usize.pow(3), 2usize.pow(4)),
+        witness_height,
+        witness_width,
         projection_ratio: 2usize.pow(5),
         projection_height: 2usize.pow(8),
         basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
@@ -717,9 +764,18 @@ pub fn p_3(size: SizeConfig) -> AuxSumcheckConfig {
 }
 
 pub fn p_4(size: SizeConfig) -> AuxSumcheckConfig {
+    let default_height = size.pick(2usize.pow(9), 2usize.pow(9), 2usize.pow(10), 2usize.pow(9));
+    let default_width = 2usize.pow(3);
+    let (witness_height, witness_width) = if size == SizeConfig::Large {
+        // Continue the quartic p30 2^13-element composed image without
+        // increasing the centered-sensitive width.
+        quartic_geometry(default_height, default_width, 2usize.pow(10), default_width)
+    } else {
+        (default_height, default_width)
+    };
     AuxSumcheckConfig {
-        witness_height: size.pick(2usize.pow(9), 2usize.pow(9), 2usize.pow(10), 2usize.pow(9)),
-        witness_width: 2usize.pow(3),
+        witness_height,
+        witness_width,
         projection_ratio: 2usize.pow(5),
         projection_height: 2usize.pow(8),
         basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
@@ -802,17 +858,25 @@ fn p_5(size: SizeConfig) -> AuxSumcheckConfig {
 }
 
 fn p_last(size: SizeConfig) -> SimpleConfig {
+    let default_height = size.pick(
+        2usize.pow(10),
+        2usize.pow(10),
+        2usize.pow(11),
+        2usize.pow(10),
+    );
+    let default_width = size.pick(2usize.pow(2), 2usize.pow(2), 2usize.pow(1), 2usize.pow(2));
+    // Every q4 terminal gate needs at most two columns at the currently
+    // installed projection bounds.  All registered lines therefore use the
+    // same 2048-by-2 terminal capacity under quartic-q; default layouts are
+    // byte-for-byte unchanged.
+    let (witness_height, witness_width) =
+        quartic_geometry(default_height, default_width, 2usize.pow(11), 2usize.pow(1));
     SimpleConfig {
         // The NarrowLarge chain needs the width-two terminal layout for its
         // centered-uniqueness gate.  Other registered lines retain their
         // previously calibrated 1024-by-4 terminal geometry.
-        witness_height: size.pick(
-            2usize.pow(10),
-            2usize.pow(10),
-            2usize.pow(11),
-            2usize.pow(10),
-        ),
-        witness_width: size.pick(2usize.pow(2), 2usize.pow(2), 2usize.pow(1), 2usize.pow(2)),
+        witness_height,
+        witness_width,
         projection_ratio: 2usize.pow(9),
         projection_height: 2usize.pow(8),
         basic_commitment_rank: CERTIFIED_BASIC_COMMITMENT_RANK,
@@ -1073,6 +1137,108 @@ mod tests {
             (front.witness_height * front.witness_width * crate::common::config::DEGREE / 2)
                 .ilog2(),
             29
+        );
+    }
+
+    #[cfg(feature = "quartic-q")]
+    #[test]
+    fn quartic_geometry_preserves_capacity_and_closes_known_width_obstructions() {
+        let p30_r1_successor = super::p_2(super::SizeConfig::Large);
+        assert_eq!(
+            (
+                p30_r1_successor.witness_height,
+                p30_r1_successor.witness_width
+            ),
+            (1 << 12, 1 << 4)
+        );
+        assert_eq!(
+            p30_r1_successor.witness_height * p30_r1_successor.witness_width,
+            1 << 16
+        );
+
+        let p30_r2_successor = super::p_3(super::SizeConfig::Large);
+        assert_eq!(
+            (
+                p30_r2_successor.witness_height,
+                p30_r2_successor.witness_width
+            ),
+            (1 << 10, 1 << 4)
+        );
+        let p30_r3_successor = super::p_4(super::SizeConfig::Large);
+        assert_eq!(
+            (
+                p30_r3_successor.witness_height,
+                p30_r3_successor.witness_width
+            ),
+            (1 << 10, 1 << 3)
+        );
+
+        let exact_p28_r3_successor = super::p_3(super::SizeConfig::Medium);
+        assert_eq!(
+            (
+                exact_p28_r3_successor.witness_height,
+                exact_p28_r3_successor.witness_width,
+            ),
+            (1 << 10, 1 << 3)
+        );
+        assert_eq!(
+            exact_p28_r3_successor.witness_height * exact_p28_r3_successor.witness_width,
+            1 << 13
+        );
+
+        for size in [
+            super::SizeConfig::Small,
+            super::SizeConfig::Medium,
+            super::SizeConfig::NarrowLarge,
+            super::SizeConfig::Large,
+        ] {
+            let terminal = super::p_last(size);
+            assert_eq!(
+                (terminal.witness_height, terminal.witness_width),
+                (1 << 11, 1 << 1)
+            );
+            assert_eq!(terminal.witness_height * terminal.witness_width, 1 << 12);
+        }
+
+        for size in [
+            super::SizeConfig::Small,
+            super::SizeConfig::Medium,
+            super::SizeConfig::NarrowLarge,
+        ] {
+            assert_chain_dims(&super::p_exact_norm_root_aux(size, 1).generate_config());
+        }
+        for size in [
+            super::SizeConfig::Small,
+            super::SizeConfig::Medium,
+            super::SizeConfig::Large,
+        ] {
+            assert_chain_dims(&super::p_root_aux(size, 1).generate_config());
+        }
+    }
+
+    #[cfg(not(feature = "quartic-q"))]
+    #[test]
+    fn quadratic_geometry_is_unchanged_by_quartic_overrides() {
+        let p30_r1_successor = super::p_2(super::SizeConfig::Large);
+        assert_eq!(
+            (
+                p30_r1_successor.witness_height,
+                p30_r1_successor.witness_width
+            ),
+            (1 << 11, 1 << 5)
+        );
+        let exact_p28_r3_successor = super::p_3(super::SizeConfig::Medium);
+        assert_eq!(
+            (
+                exact_p28_r3_successor.witness_height,
+                exact_p28_r3_successor.witness_width,
+            ),
+            (1 << 9, 1 << 4)
+        );
+        let terminal = super::p_last(super::SizeConfig::Large);
+        assert_eq!(
+            (terminal.witness_height, terminal.witness_width),
+            (1 << 10, 1 << 2)
         );
     }
 
