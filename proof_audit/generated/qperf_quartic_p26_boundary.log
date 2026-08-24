@@ -1,0 +1,95 @@
+warning: unused import: `crate::common::sumcheck_element::SumcheckElement`
+ --> src\common\hash.rs:9:5
+  |
+9 | use crate::common::sumcheck_element::SumcheckElement;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\intermediate_sumchecks\runner.rs:8:9
+  |
+8 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\intermediate_sumchecks\runner_verifier.rs:9:9
+  |
+9 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\snark\lowering.rs:7:9
+  |
+7 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+  --> src\protocol\sumchecks\runner_verifier.rs:10:9
+   |
+10 |         sumcheck_element::SumcheckElement,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\sumchecks\runner.rs:9:9
+  |
+9 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+  --> src\protocol\sumchecks\helpers.rs:10:9
+   |
+10 |         sumcheck_element::SumcheckElement,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\sumcheck_utils\ring_to_field_combiner.rs:7:9
+  |
+7 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rokoko` (lib test) generated 8 warnings
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.18s
+     Running unittests src\lib.rs (target\debug\build\rokoko/ec601f68d2e6d742\out\rokoko-ec601f68d2e6d742.exe)
+
+running 1 test
+TOTAL CRS gen time: 5311202000 ns
+test protocol::parties::executor::tests::round_boundary_extraction has been running for over 60 seconds
+TOTAL Commit time: 57916270800 ns
+TOTAL Prover time (to boundary): 47176948300 ns
+norm calibration: label="norm claim via inner-product" value=9685892.033567326 old_bound=9882122.115488524
+norm calibration: label="most inner norm claim via inner-product" value=3728.208282808245 old_bound=3806.709010628472
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=28605067.600384027 old_bound=31959552.494014546
+norm calibration: label="norm claim via inner-product" value=11669688.447089193 old_bound=32594710.658809807
+norm calibration: label="most inner norm claim via inner-product" value=4532.947495835353 old_bound=4710.64845370571
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=24368785.01766424 old_bound=34200492.298465796
+norm calibration: label="recomposed projection norm claim via inner-product" value=29582353.832288835 old_bound=29447451.834417176
+norm calibration: label="norm claim via inner-product" value=24699591.983348995 old_bound=21662024.814751305
+norm calibration: label="most inner norm claim via inner-product" value=5283.558743877085 old_bound=5396.042461471185
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=23919785.12362333 old_bound=31381900.743720163
+norm calibration: label="recomposed projection norm claim via inner-product" value=27325816.37675665 old_bound=34106214.630748376
+TOTAL Verifier time (to boundary): 62122100 ns
+TOTAL CRS gen time: 5400904500 ns
+TOTAL Commit time: 53983208000 ns
+TOTAL Prover time (to boundary): 45334909000 ns
+norm calibration: label="norm claim via inner-product" value=9687563.024480512 old_bound=9882122.115488524
+norm calibration: label="most inner norm claim via inner-product" value=3700.860440492184 old_bound=3806.709010628472
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=21828634.15245324 old_bound=31959552.494014546
+norm calibration: label="norm claim via inner-product" value=9766024.994375348 old_bound=32594710.658809807
+norm calibration: label="most inner norm claim via inner-product" value=4554.297421117773 old_bound=4710.64845370571
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=24728125.74289946 old_bound=34200492.298465796
+norm calibration: label="recomposed projection norm claim via inner-product" value=28881682.195093207 old_bound=29447451.834417176
+norm calibration: label="norm claim via inner-product" value=24784735.92788965 old_bound=21662024.814751305
+norm calibration: label="most inner norm claim via inner-product" value=5252.308920846145 old_bound=5396.042461471185
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=22958387.448942468 old_bound=31381900.743720163
+norm calibration: label="recomposed projection norm claim via inner-product" value=25805369.3330807 old_bound=34106214.630748376
+norm calibration: label="norm claim via inner-product" value=26506182.33742081 old_bound=31091957.566198643
+norm calibration: label="most inner norm claim via inner-product" value=5236.630023211493 old_bound=5419.777654553736
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=11114838.292667104 old_bound=31502078.6970817
+norm calibration: label="recomposed projection norm claim via inner-product" value=24782028.669718992 old_bound=29484395.547175705
+TOTAL Verifier time (to boundary): 85504500 ns
+test protocol::parties::executor::tests::round_boundary_extraction ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 163 filtered out; finished in 233.47s
+
+PEAK_RSS aggregate_kib=3675688 single_process_kib=3644664 processes_at_aggregate_peak=3 elapsed_seconds=233.812 sample_interval_seconds=0.100

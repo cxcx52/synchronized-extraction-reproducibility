@@ -1,0 +1,91 @@
+   Compiling rokoko v0.1.0 (C:\Users\72880\Documents\Codex\2026-08-18\c-users-72880-desktop-eurocrypt-2027\work\technical_audit_git_20260822\rokoko)
+warning: unused import: `crate::common::sumcheck_element::SumcheckElement`
+ --> src\common\hash.rs:9:5
+  |
+9 | use crate::common::sumcheck_element::SumcheckElement;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\intermediate_sumchecks\runner.rs:8:9
+  |
+8 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\intermediate_sumchecks\runner_verifier.rs:9:9
+  |
+9 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\snark\lowering.rs:7:9
+  |
+7 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+  --> src\protocol\sumchecks\runner_verifier.rs:10:9
+   |
+10 |         sumcheck_element::SumcheckElement,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\sumchecks\runner.rs:9:9
+  |
+9 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+  --> src\protocol\sumchecks\helpers.rs:10:9
+   |
+10 |         sumcheck_element::SumcheckElement,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `sumcheck_element::SumcheckElement`
+ --> src\protocol\sumcheck_utils\ring_to_field_combiner.rs:7:9
+  |
+7 |         sumcheck_element::SumcheckElement,
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rokoko` (lib test) generated 8 warnings
+    Finished `test` profile [optimized + debuginfo] target(s) in 5.74s
+     Running unittests src\lib.rs (target\debug\build\rokoko/ec601f68d2e6d742\out\rokoko-ec601f68d2e6d742.exe)
+
+running 1 test
+TOTAL CRS gen time: 5125224800 ns
+test protocol::parties::executor::tests::calibrate_full_chain_norms has been running for over 60 seconds
+TOTAL Commit time: 57528526000 ns
+TOTAL Prover time: 56171222300 ns
+norm calibration: label="norm claim via inner-product" value=9685892.033567326 old_bound=9882122.115488524
+norm calibration: label="most inner norm claim via inner-product" value=3728.208282808245 old_bound=3806.709010628472
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=28605067.600384027 old_bound=31959552.494014546
+norm calibration: label="norm claim via inner-product" value=11669688.447089193 old_bound=32594710.658809807
+norm calibration: label="most inner norm claim via inner-product" value=4532.947495835353 old_bound=4710.64845370571
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=24368785.01766424 old_bound=34200492.298465796
+norm calibration: label="recomposed projection norm claim via inner-product" value=29582353.832288835 old_bound=29447451.834417176
+norm calibration: label="norm claim via inner-product" value=24699591.983348995 old_bound=21662024.814751305
+norm calibration: label="most inner norm claim via inner-product" value=5283.558743877085 old_bound=5396.042461471185
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=23919785.12362333 old_bound=31381900.743720163
+norm calibration: label="recomposed projection norm claim via inner-product" value=27325816.37675665 old_bound=34106214.630748376
+norm calibration: label="norm claim via inner-product" value=27896810.085944325 old_bound=31091957.566198643
+norm calibration: label="most inner norm claim via inner-product" value=5246.07052945345 old_bound=5419.777654553736
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=30408617.618855562 old_bound=31502078.6970817
+norm calibration: label="recomposed projection norm claim via inner-product" value=29082164.66155654 old_bound=29484395.547175705
+norm calibration: label="norm claim via inner-product" value=17541403.915343292 old_bound=31850401.169203017
+norm calibration: label="most inner norm claim via inner-product" value=5258.440453214242 old_bound=5355.416240965776
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=22397708.0661734 old_bound=33129888.480057236
+norm calibration: label="recomposed projection norm claim via inner-product" value=13716489.885655405 old_bound=31196556.28772182
+norm calibration: label="norm claim via inner-product" value=5596478.494851382 old_bound=5740863.330319596
+norm calibration: label="most inner norm claim via inner-product" value=251780.5437737396 old_bound=235571.8272600635
+norm calibration: label="recomposed folded-witness norm claim via inner-product" value=25127244.457791865 old_bound=27260935.930155843
+norm calibration: label="recomposed projection norm claim via inner-product" value=22965818.921478655 old_bound=28113554.95742439
+norm calibration: label="folded witness in simple verifier" value=31685865.4025728 old_bound=33631611.129876986
+norm calibration: label="projection image in simple verifier" value=59774017.77311851 old_bound=62736503.92388472
+TOTAL Verifier time: 744459900 ns
+test protocol::parties::executor::tests::calibrate_full_chain_norms ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 163 filtered out; finished in 127.92s
+
+PEAK_RSS aggregate_kib=3067932 single_process_kib=3036180 processes_at_aggregate_peak=3 elapsed_seconds=134.140 sample_interval_seconds=0.100
