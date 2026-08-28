@@ -10,8 +10,16 @@ from __future__ import annotations
 import csv
 import json
 import math
+import os
 import warnings
 from pathlib import Path
+
+# SymPy may otherwise select python-flint ground types when the optional
+# package is installed.  SymPy 1.13 then fails while sorting finite-field
+# factors (``TypeError: nmods cannot be ordered``) on Python 3.12.  The pure
+# Python ground types give the same exact computation and make this verifier
+# independent of optional site packages.
+os.environ.setdefault("SYMPY_GROUND_TYPES", "python")
 
 import sympy as sp
 from sympy.utilities.exceptions import SymPyDeprecationWarning

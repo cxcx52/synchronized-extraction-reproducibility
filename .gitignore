@@ -1,3 +1,33 @@
+# Python
 **/__pycache__/
-**/*.pyc
+**/*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+.venv/
+venv/
+
+# Rust, C/C++, and local build trees
+**/target/
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/compile_commands.json
+**/*.o
+**/*.obj
+**/*.so
+**/*.dll
+**/*.dylib
+**/*.exe
+
+# Local experiment and profiling output
 cbc_experiments/results/
+rokoko/profiles/
+rokoko/bench_results/
+proof_audit/generated/local/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

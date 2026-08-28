@@ -36,25 +36,19 @@ cargo +nightly run --release --features incomplete-rexl
 
 #### Using HEXL C++ bindings
 
-It is first necessary to build the library submodule separately.
-
-Clone and build the HEXL submodule:
-
-```
-git submodule update --init --recursive
-```
-
-Then run:
+The monorepo does not vendor optional third-party dependencies.  Clone HEXL
+into the expected local path and build it:
 
 ```
+git clone https://github.com/IntelLabs/hexl.git hexl-bindings/hexl
 make hexl
 make wrapper
+```
+
+Then run the Rust binary:
+
+```
 export LD_LIBRARY_PATH=./hexl-bindings/hexl/build/hexl/lib:$(pwd)
-```
-
-Finally, run:
-
-```
 cargo +nightly run --release
 ```
 
@@ -270,6 +264,11 @@ Due to memory requirements for polynomial degree 2^30 exceeding 64 GB, the respe
   estimate.  The legacy Sage/lattice-estimator shell path remains available
   only for cross-checking the port.
 * `debug-decomp`: additional checks for decomposition and overflows in type 0 projections
+
+The legacy Sage cross-check additionally expects
+`https://github.com/malb/lattice-estimator` at `lattice-estimator/`.  The
+manuscript tables use the pinned standard-Python estimator port in
+`../concentrationfold_reproducibility/` and do not require that checkout.
 
 ## License
 

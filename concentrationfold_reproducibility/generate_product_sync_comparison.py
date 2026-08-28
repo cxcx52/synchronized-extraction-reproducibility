@@ -31,6 +31,7 @@ ELL_1 = 31
 DIM = M * ELL * PHI
 EUCLIDEAN_SHIFT = 0.5 * math.log2(DIM)
 GATE = math.log2((Q_EXACT - 1) / 2)
+EUCLIDEAN_SCALED_GATE = GATE + EUCLIDEAN_SHIFT
 
 
 def row(arity: int) -> dict[str, object]:
@@ -59,12 +60,22 @@ def row(arity: int) -> dict[str, object]:
         "base_sync_loss_bits": base_sync_loss_bits,
         "communication_KiB": communication_bits / (8 * 1024),
         "log2_centered_gate": GATE,
-        "product_gate": "nontrivial" if log_prod_2 < GATE else "trivial",
-        "sync_gate": "nontrivial" if log_sync_2 < GATE else "trivial",
+        "log2_euclidean_scaled_gate": EUCLIDEAN_SCALED_GATE,
+        "product_gate": "nontrivial" if log_prod_inf < GATE else "trivial",
+        "sync_gate": "nontrivial" if log_sync_inf < GATE else "trivial",
     }
 
 
 rows = [row(L) for L in (1, 2, 4, 8)]
+
+# The arity-two separation must be checked in one metric at a time.
+arity_two = next(item for item in rows if item["L"] == 2)
+assert arity_two["log2_B_sync"] < GATE < arity_two["log2_B_prod"]
+assert (
+    arity_two["log2_l2_sync"]
+    < EUCLIDEAN_SCALED_GATE
+    < arity_two["log2_l2_prod"]
+)
 
 with (OUT / "product_vs_sync.csv").open("w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=list(rows[0]))
@@ -74,7 +85,7 @@ with (OUT / "product_vs_sync.csv").open("w", newline="", encoding="utf-8") as f:
 tex = [
     r"\begin{table}[t]",
     r"\centering",
-    r"\caption{Formula-derived product-clearing and synchronized safe bounds on the pinned exact-strong parameter line.  All radii are theorem-derived.  The last two radius columns apply the pinned conversion $\|z\|_2\le\sqrt{m\ell\phi}\|z\|_\infty$; the centered gate is $\log_2((q_{\rm exact}-1)/2)\approx49$.  ``Triv.'' means the safe bound already exceeds this gate, not that the underlying SIS problem has been fully analyzed.}",
+    r"\caption{Formula-derived product-clearing and synchronized bounds on the pinned exact-strong parameter line.  The last two radius columns apply $\|z\|_2\le\sqrt{m\ell\phi}\|z\|_\infty$ for Euclidean-SIS estimation.  The gate columns compare the coefficient bounds $B_{\rm prod},B_{\rm sync}$ with the coefficientwise centered threshold $(q_{\rm exact}-1)/2$.}",
     r"\label{tab:product-sync}",
     r"\scriptsize",
     r"\begin{tabular}{r@{\quad}r@{\quad}r@{\quad}r@{\quad}r@{\quad}c@{\quad}c}",
