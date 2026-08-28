@@ -6,6 +6,48 @@ manuscript.  It is organized as a monorepo so that the complete code release
 can be uploaded to GitHub in one push without bundling generated binaries,
 Cargo build trees, or local calibration workspaces.
 
+## Paper overview
+
+The manuscript, *Avoiding Product-Denominator Blowup in Lattice-Folding
+Extraction*, studies a concrete loss that appears when coordinate-wise
+extraction produces normalized or fractional openings but the final lattice
+reduction requires a short integral SIS witness.  Clearing every coordinate
+denominator independently in two forked branches can multiply the local
+shortness losses, producing a radius that grows like a product across the
+folding arity.
+
+The paper changes the order of these operations.  It synchronizes two
+success-selected coordinate stars at the same numerical root, compares their
+normalized openings locally, and clears only the denominators needed for that
+comparison.  Acceptance-weighted shared-root resampling and coordinate-fiber
+cancellation realize this comparison against malicious provers with additive
+raw extraction loss and linear unconditional expected retry complexity.
+
+The two main contributions are:
+
+1. **Synchronized extraction without product-denominator blowup.**  The paper
+   formalizes an anchored affine extraction interface and derives a local
+   comparison radius that depends on the largest local challenge slack rather
+   than the product of all coordinate denominators.  The construction includes
+   the probability accounting needed to synchronize two success-selected
+   coordinate stars around one inherited root.
+2. **A concrete consequence for Cyclo.**  The interface is instantiated for a
+   Cyclo-compatible fold.  At arity two, the synchronized coefficient-radius
+   exponent is `25.0444`, the coefficientwise centered-modulus threshold is
+   approximately `49`, and the product-clearing exponent is `49.6294`.
+   Consequently, synchronized extraction remains in the centered regime while
+   the product-clearing bound crosses the threshold.
+
+The accompanying results discharge the algebraic and compilation obligations
+of this application.  Fixed-weight challenge families are analyzed through
+their CRT components, including an exact-strong degree-eight line, the
+quadratic support obstruction, and a quartic exact-strong construction.  A
+one-fold classical-ROM theorem compiles the synchronized extractor, while the
+integer-IPA audit records how the same compare-before-clearing principle
+changes an independent capacity calculation.  The scripts and frozen evidence
+for these statements are indexed under `proof_audit/` and
+`concentrationfold_reproducibility/`.
+
 ## Repository map
 
 | Path | Purpose | Default action |
